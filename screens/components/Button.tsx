@@ -1,15 +1,19 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, TouchableOpacity } from "react-native";
 
 type props = {
   name: string;
+  onPress: () => void;
 };
 
-function Button({ name }: props) {
+function Button({ name, onPress }: props) {
   return (
-    <View className="w-6/12 rounded-full h-12 bg-black justify-center items-center mb-3">
+    <TouchableOpacity
+      activeOpacity={0.7}
+      className="w-6/12 rounded-full h-12 bg-black justify-center items-center mb-3"
+    >
       <Text className="text-white text-base">{name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 

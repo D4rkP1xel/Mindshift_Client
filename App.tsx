@@ -1,14 +1,28 @@
 import { useState } from "react";
-import { Text, View, TextInput } from "react-native";
+import { Text, View, TextInput, Image, TouchableHighlight } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome5";
 import Button from "./screens/components/Button";
+
 export default function App() {
+  let user = { username: "yo", password: "123" };
   let [emailInput, setEmailInput] = useState("");
   let [passwordInput, setPasswordInput] = useState("");
+
+  function signIn(username: string, password: string) {
+    if (username === user.username && password === user.password) {
+    }
+  }
   return (
     <View className="mt-6">
       <View className="h-screen justify-center items-center">
-        <View className="w-full items-center gap-5 mt-60">
+        <View className="w-full items-center gap-5 mt-36">
+          <View className="mb-6">
+            <Image
+              className="w-48"
+              resizeMode="contain"
+              source={require("./assets/mindshift-full-logo.png")}
+            />
+          </View>
           <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
             <FontAwesome name={"user-alt"} color={"black"} size={20} />
             <TextInput
@@ -29,7 +43,7 @@ export default function App() {
             />
           </View>
           <View className="items-center w-full pt-5">
-            <Button name="SIGN IN" />
+            <Button onPress={signIn} name="SIGN IN" />
           </View>
         </View>
 
