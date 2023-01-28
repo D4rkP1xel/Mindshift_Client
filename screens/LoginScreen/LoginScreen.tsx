@@ -4,12 +4,16 @@ import { Text, View, TextInput, Image, Alert } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 
+type Nav = {
+  navigate: (value: string) => void
+}
+
 function LoginScreen() {
   let user = { username: "yo", password: "123" }
   let [emailInput, setEmailInput] = useState("")
   let [passwordInput, setPasswordInput] = useState("")
 
-  const navigation = useNavigation()
+  const navigation = useNavigation<Nav>()
 
   function signIn(username: string, password: string) {
     if (username === user.username && password === user.password) {
