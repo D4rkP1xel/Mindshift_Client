@@ -2,9 +2,31 @@ import { useState } from "react"
 import { View, Text, Alert, TextInput } from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
+import { useQueryClient } from "react-query/types/react"
+import axios from "../utils/axiosConfig"
+import { useQuery } from "react-query/types/react/useQuery"
 
 function HomeScreen() {
+  type userType = {
+    id: string
+    name: string
+    email: string
+  }
   const [toDoInput, addToDoInput] = useState("")
+  const queryClient = useQueryClient()
+  const userInfo = queryClient.getQueryData("user")
+  const [selectedDate, changeSelectedDate] = useState(Date.now())
+  const { data: toDos, refetch: refreshToDos } = useQuery(
+    ["toDos"],
+    async () => {
+      return axios
+        .post("/task/get", { user_id: "userInfo.id", date: selectedDate })
+        .then((res) => res.data.tasks)
+        .catch((err) => {
+          console.log(err)
+        })
+    }
+  )
 
   function handlePress() {
     if (toDoInput.length < 2) return Alert.alert("Minimum size is 2 letters.")
