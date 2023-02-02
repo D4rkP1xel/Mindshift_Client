@@ -22,17 +22,20 @@ function LoginScreen() {
 
   const navigation = useNavigation<Nav>()
 
-  async function signIn(username: string, password: string) {
+  async function signIn(input: string, password: string) {
+    let requestBody = input.includes("@")
+      ? { email: input, password: password }
+      : { username: input, password: password }
     try {
-      let response = await axios.post<loginResponse>("/user/login", {
-        username: username.includes("@") ? null : username,
-        email: username.includes("@") ? username : null,
-        password: password,
-      })
+      let response = await axios.post<loginResponse>("/user/login", requestBody)
       if (response.data.message === "User logged with success") {
         navigation.navigate("Home")
+      } else if (response.data.message === "User doesnt exist") {
+        Alert.alert("Username/Email is not registered")
+      } else if (response.data.message === "Wrong password") {
+        Alert.alert("Wrong Password")
       } else {
-        Alert.alert("Username and/or Password are wrong.")
+        Alert.alert("Unknown Error, try again")
       }
     } catch (err) {
       console.log(err)

@@ -2,9 +2,10 @@ import { useState } from "react"
 import { View, Text, Alert, TextInput } from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
-import { useQueryClient } from "react-query/types/react"
+
 import axios from "../utils/axiosConfig"
-import { useQuery } from "react-query/types/react/useQuery"
+
+import { useQuery, useQueryClient } from "react-query"
 
 function HomeScreen() {
   const [toDoInput, addToDoInput] = useState("")
