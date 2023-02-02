@@ -3,23 +3,39 @@ import { useState } from "react"
 import { Text, View, TextInput, Image, Alert } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
+import axios from "../utils/axiosConfig"
 
 type Nav = {
   navigate: (value: string) => void
 }
 
+interface loginResponse {
+  message: string | undefined
+  user_data:
+    | { id: string; email: string; name: string; creation_date: number }
+    | undefined
+  error: string | undefined
+}
 function LoginScreen() {
-  let user = { username: "yo", password: "123" }
   let [emailInput, setEmailInput] = useState("")
   let [passwordInput, setPasswordInput] = useState("")
 
   const navigation = useNavigation<Nav>()
 
-  function signIn(username: string, password: string) {
-    if (username === user.username && password === user.password) {
-      navigation.navigate("Home")
-    } else {
-      Alert.alert("Username and/or Password are wrong.")
+  async function signIn(username: string, password: string) {
+    try {
+      let response = await axios.post<loginResponse>("/user/login", {
+        username: username.includes("@") ? null : username,
+        email: username.includes("@") ? username : null,
+        password: password,
+      })
+      if (response.data.message === "User logged with success") {
+        navigation.navigate("Home")
+      } else {
+        Alert.alert("Username and/or Password are wrong.")
+      }
+    } catch (err) {
+      console.log(err)
     }
   }
   return (
@@ -54,7 +70,7 @@ function LoginScreen() {
           </View>
           <View className="items-center w-full pt-5">
             <CustomButton
-              onPressFunc={() => signIn(emailInput, passwordInput)}
+              onPressFunc={async () => await signIn(emailInput, passwordInput)}
               name="SIGN IN"
             />
           </View>

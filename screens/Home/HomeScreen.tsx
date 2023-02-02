@@ -7,11 +7,6 @@ import axios from "../utils/axiosConfig"
 import { useQuery } from "react-query/types/react/useQuery"
 
 function HomeScreen() {
-  type userType = {
-    id: string
-    name: string
-    email: string
-  }
   const [toDoInput, addToDoInput] = useState("")
   const queryClient = useQueryClient()
   const userInfo = queryClient.getQueryData("user")
