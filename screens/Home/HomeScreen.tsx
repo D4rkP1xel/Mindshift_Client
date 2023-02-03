@@ -2,16 +2,15 @@ import { useState } from "react"
 import { View, Text, Alert, TextInput } from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
-
+import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
 
-import { useQuery, useQueryClient } from "react-query"
+import { useQuery } from "react-query"
 
 function HomeScreen() {
   const [toDoInput, addToDoInput] = useState("")
-  const queryClient = useQueryClient()
-  const userInfo = queryClient.getQueryData("user")
   const [selectedDate, changeSelectedDate] = useState(Date.now())
+  const email = useUserInfo((state) => state.userInfo)
   const { data: toDos, refetch: refreshToDos } = useQuery(
     ["toDos"],
     async () => {

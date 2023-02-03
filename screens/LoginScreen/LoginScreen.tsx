@@ -4,7 +4,7 @@ import { Text, View, TextInput, Image, Alert } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 import axios from "../utils/axiosConfig"
-
+import useUserInfo from "../utils/useUserInfo"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -19,9 +19,9 @@ interface loginResponse {
 function LoginScreen() {
   let [emailInput, setEmailInput] = useState("")
   let [passwordInput, setPasswordInput] = useState("")
-
   const navigation = useNavigation<Nav>()
-
+  const email = useUserInfo((state) => state.userInfo)
+  const setUserInfo = useUserInfo((state) => state.setUserInfo)
   async function signIn(input: string, password: string) {
     let requestBody = input.includes("@")
       ? { email: input, password: password }
@@ -29,6 +29,7 @@ function LoginScreen() {
     try {
       let response = await axios.post<loginResponse>("/user/login", requestBody)
       if (response.data.message === "User logged with success") {
+        setUserInfo({ ...response.data.user_data })
         navigation.navigate("Home")
       } else if (response.data.message === "User doesnt exist") {
         Alert.alert("Username/Email is not registered")
