@@ -4,13 +4,13 @@ import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
-
+import getCustomDate from "../utils/getCustomDate"
 import { useQuery } from "react-query"
 
 function HomeScreen() {
   const [toDoInput, addToDoInput] = useState("")
-  const [selectedDate, changeSelectedDate] = useState(Date.now())
-  const email = useUserInfo((state) => state.userInfo)
+  const [selectedDate, changeSelectedDate] = useState(getCustomDate())
+  const userInfoState = useUserInfo((state) => state.userInfo)
   const { data: toDos, refetch: refreshToDos } = useQuery(
     ["toDos"],
     async () => {
@@ -23,10 +23,19 @@ function HomeScreen() {
     }
   )
 
-  function handlePress() {
+  async function handlePress() {
     if (toDoInput.length < 2) return Alert.alert("Minimum size is 2 letters.")
-
-    //implement route to server that adds the todo and mutates it
+    try {
+      await axios.post("/task/add", {
+        user_id: userInfoState.id,
+        task_name: toDoInput,
+        task_date: selectedDate,
+      })
+      Alert.alert("Task added with success")
+    } catch (err) {
+      console.log(err)
+      Alert.alert("Error adding new task")
+    }
   }
   return (
     <View className="mt-6">
