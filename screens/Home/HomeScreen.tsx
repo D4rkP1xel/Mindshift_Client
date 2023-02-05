@@ -5,36 +5,75 @@ import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
 import getCustomDate from "../utils/getCustomDate"
-import { useQuery } from "react-query"
+import { useMutation, useQuery, useQueryClient } from "react-query"
+import Task from "../components/Task"
 
+interface task {
+  id: string
+  name: string
+  date: string | number
+  user_id: string
+  is_done: number
+}
 function HomeScreen() {
   const [toDoInput, addToDoInput] = useState("")
   const [selectedDate, changeSelectedDate] = useState(getCustomDate())
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const { data: toDos, refetch: refreshToDos } = useQuery(
-    ["toDos"],
-    async () => {
-      return axios
-        .post("/task/get", { user_id: "userInfo.id", date: selectedDate })
-        .then((res) => res.data.tasks)
-        .catch((err) => {
-          console.log(err)
+  const queryClient = useQueryClient()
+  const {
+    data: tasks,
+    refetch: refreshTasks,
+    isLoading: isLoadingTasks,
+  } = useQuery(["tasks"], async () => {
+    return axios
+      .post("/task/get", { user_id: userInfoState.id, date: selectedDate })
+      .then((res) => {
+        console.log(res.data.tasks)
+        return res.data.tasks
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  })
+
+  const { mutate: mutateNewTask } = useMutation(
+    async (params) => await handleAddTask(params),
+    {
+      onMutate: (newTaskName: string) => {
+        if (newTaskName.length < 2) return
+        queryClient.cancelQueries({ queryKey: ["tasks"] })
+        queryClient.setQueryData(["tasks"], (prev: any) => {
+          return [
+            ...prev,
+            {
+              name: newTaskName,
+              id: (Math.random() * 1000).toString(),
+              is_done: -1,
+            },
+          ]
         })
+      },
+      onError: () => {
+        queryClient.setQueryData(["tasks"], (prev: any) =>
+          prev.slice(0, prev.length - 1)
+        )
+      },
     }
   )
 
-  async function handlePress() {
-    if (toDoInput.length < 2) return Alert.alert("Minimum size is 2 letters.")
+  async function handleAddTask(newTaskName: string) {
+    if (newTaskName.length < 2) return Alert.alert("Minimum size is 2 letters.")
     try {
       await axios.post("/task/add", {
         user_id: userInfoState.id,
-        task_name: toDoInput,
+        task_name: newTaskName,
         task_date: selectedDate,
       })
       Alert.alert("Task added with success")
     } catch (err) {
       console.log(err)
       Alert.alert("Error adding new task")
+      throw new Error("oh noo")
     }
   }
   return (
@@ -51,7 +90,13 @@ function HomeScreen() {
             />
           </View>
         </View>
-        <Text className="text-sm text-gray-500">1/4</Text>
+        <Text className="text-sm text-gray-500">
+          {tasks != null
+            ? `${tasks.filter((task: task) => task.is_done === 1).length}/${
+                tasks.length
+              }`
+            : "0/0"}
+        </Text>
         <View className="mt-6 flex-row w-full">
           <View className="border-b w-10/12">
             <TextInput
@@ -61,7 +106,7 @@ function HomeScreen() {
           </View>
           <View className="ml-auto">
             <Ionicons
-              onPress={handlePress}
+              onPress={() => mutateNewTask(toDoInput)}
               name={"plus"}
               color={"black"}
               size={24}
@@ -69,18 +114,18 @@ function HomeScreen() {
           </View>
         </View>
         <View className="mt-8">
-          <View className="py-2 border-b border-green-600 mb-4">
-            <Text className="text-base">Go to the gym</Text>
-          </View>
-          <View className="py-2 border-b border-red-600 mb-4">
-            <Text className="text-base">Read 1 chapter of a book</Text>
-          </View>
-          <View className="py-2 border-b border-yellow-500 mb-4">
-            <Text className="text-base">Code</Text>
-          </View>
-          <View className="py-2 border-b border-red-600 mb-4">
-            <Text className="text-base">Meditate</Text>
-          </View>
+          {tasks != null ? (
+            tasks.map((task: task, index: number) => {
+              return (
+                <Task
+                  name={task.name}
+                  is_done={task.is_done}
+                  key={task.id}></Task>
+              )
+            })
+          ) : isLoadingTasks ? null : (
+            <Text>No tasks added for this day</Text>
+          )}
         </View>
       </View>
     </View>
