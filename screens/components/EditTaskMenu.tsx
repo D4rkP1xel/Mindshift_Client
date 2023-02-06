@@ -1,15 +1,43 @@
 import { useState } from "react"
-import { View, Text, TextInput, TouchableOpacity } from "react-native"
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
+import { useQueryClient } from "react-query"
+import axios from "../utils/axiosConfig"
 
 interface props {
   setEditMenuOpen: any
   initialTaskName: string
+  id: string
 }
-function EditTaskMenu({ setEditMenuOpen, initialTaskName }: props) {
-  const [taskName, setTaskName] = useState(initialTaskName)
 
-  function saveTask() {
+interface task {
+  id: string
+  name: string
+  date: string | number
+  user_id: string
+  is_done: number
+}
+function EditTaskMenu({ setEditMenuOpen, initialTaskName, id }: props) {
+  const [taskName, setTaskName] = useState(initialTaskName)
+  const queryClient = useQueryClient()
+  const tasks: task[] | undefined = queryClient.getQueryData(["tasks"])
+  async function saveTask() {
+    if (initialTaskName.trim() !== taskName.trim()) {
+      //change task name
+      if (taskName.trim().length < 2)
+        return Alert.alert("Minimum size is 2 letters.")
+      if (
+        tasks != null &&
+        tasks
+          .map((task: task) => task.name.toLowerCase())
+          .includes(taskName.trim().toLowerCase())
+      )
+        return Alert.alert("Task already exists")
+      await axios.post("/task/changename", {
+        task_id: id,
+        task_name: taskName.trim(),
+      })
+    }
     return
   }
   return (
@@ -50,7 +78,7 @@ function EditTaskMenu({ setEditMenuOpen, initialTaskName }: props) {
         <View className="mt-auto w-full flex-row-reverse">
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => saveTask()}
+            onPress={async () => await saveTask()}
             className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3">
             <Text className="text-white text-lg">Save</Text>
           </TouchableOpacity>
