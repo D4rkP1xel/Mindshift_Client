@@ -1,10 +1,16 @@
+import { useContext } from "react"
 import { View, Text } from "react-native"
 
 interface props {
   name: string
   is_done: number
+  id: string
 }
-function Task({ name, is_done }: props) {
+import { EditMenuContext } from "../Home/HomeScreen"
+
+function Task({ name, is_done, id }: props) {
+  const setEditMenuOpen = useContext(EditMenuContext)
+
   return (
     <View
       className={
@@ -14,7 +20,9 @@ function Task({ name, is_done }: props) {
           ? "py-2 border-b border-yellow-500 mb-4"
           : "py-2 border-b border-green-600 mb-4"
       }>
-      <Text className="text-base">{name}</Text>
+      <Text onPress={() => setEditMenuOpen(id)} className="text-base">
+        {name}
+      </Text>
     </View>
   )
 }
