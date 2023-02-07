@@ -77,6 +77,7 @@ function HomeScreen() {
         queryClient.setQueryData(["tasks"], (prev: any) =>
           prev.slice(0, prev.length - 1)
         )
+        setEditMenuOpen("")
       },
     }
   )
@@ -96,6 +97,7 @@ function HomeScreen() {
         task_date: selectedDate,
       })
       Alert.alert("Task added with success")
+      addToDoInput("")
     } catch (err) {
       console.log(err)
       Alert.alert("Error adding new task")
@@ -108,7 +110,12 @@ function HomeScreen() {
         <EditTaskMenu
           setEditMenuOpen={setEditMenuOpen}
           initialTaskName={
-            tasks.filter((task: task) => task.id === isEditMenuOpen)[0].name
+            tasks.filter((task: task) => task.id === isEditMenuOpen)[0].name ||
+            ""
+          }
+          id={isEditMenuOpen}
+          is_done={
+            tasks.filter((task: task) => task.id === isEditMenuOpen)[0].is_done
           }
         />
       ) : null}
