@@ -1,44 +1,41 @@
-import { useNavigation } from "@react-navigation/native"
-import { useState } from "react"
 import { Text, View, TextInput, Image, Alert } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
+import Entypo from "react-native-vector-icons/Entypo"
 import CustomButton from "../components/Button"
+import { useState } from "react"
 import axios from "../utils/axiosConfig"
 import useUserInfo from "../utils/useUserInfo"
+import { useNavigation } from "@react-navigation/native"
+
 type Nav = {
   navigate: (value: string) => void
 }
 
-interface loginResponse {
-  message: string | undefined
-  user_data:
-    | { id: string; email: string; name: string; creation_date: number }
-    | undefined
-  error: string | undefined
-}
-function LoginScreen() {
+function CreateAccountScreen() {
   let [emailInput, setEmailInput] = useState("")
+  let [usernameInput, setUsernameInput] = useState("") //cant have @
   let [passwordInput, setPasswordInput] = useState("")
   const navigation = useNavigation<Nav>()
-  const setUserInfo = useUserInfo((state) => state.setUserInfo)
-  async function signIn(input: string, password: string) {
-    let requestBody = input.includes("@")
-      ? { email: input, password: password }
-      : { username: input, password: password }
+  async function createAccount(
+    emailInputParam: string,
+    usernameInputParam: string,
+    passwordInputParam: string
+  ) {
+    if (usernameInputParam.includes("@"))
+      return Alert.alert("Username can't have @")
+    if (passwordInputParam.length < 3)
+      return Alert.alert("Password must be >=3 characters")
     try {
-      let response = await axios.post<loginResponse>("/user/login", requestBody)
-      if (response.data.message === "User logged with success") {
-        setUserInfo({ ...response.data.user_data })
-        navigation.navigate("Home")
-      } else if (response.data.message === "User doesnt exist") {
-        Alert.alert("Username/Email is not registered")
-      } else if (response.data.message === "Wrong password") {
-        Alert.alert("Wrong Password")
-      } else {
-        Alert.alert("Unknown Error, try again")
-      }
+      await axios.post("/user/add", {
+        username: usernameInputParam,
+        password: passwordInputParam,
+        email: emailInputParam,
+      })
+      Alert.alert("Account created with success.")
+      navigation.navigate("Login")
     } catch (err) {
       console.log(err)
+      Alert.alert("Server Error. Try again later.")
     }
   }
   return (
@@ -53,12 +50,21 @@ function LoginScreen() {
             />
           </View>
           <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
-            <FontAwesome name={"user-alt"} color={"black"} size={20} />
+            <Entypo name={"mail"} color={"black"} size={20} />
             <TextInput
               className="px-2 w-full"
               value={emailInput}
-              placeholder="Username/Email"
+              placeholder="Email"
               onChangeText={(text) => setEmailInput(text)}
+            />
+          </View>
+          <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
+            <FontAwesome name={"user-alt"} color={"black"} size={20} />
+            <TextInput
+              className="px-2 w-full"
+              value={usernameInput}
+              placeholder="Username"
+              onChangeText={(text) => setUsernameInput(text)}
             />
           </View>
           <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
@@ -73,20 +79,22 @@ function LoginScreen() {
           </View>
           <View className="items-center w-full pt-5">
             <CustomButton
-              onPressFunc={async () => await signIn(emailInput, passwordInput)}
-              name="Sign In"
+              onPressFunc={async () =>
+                await createAccount(emailInput, usernameInput, passwordInput)
+              }
+              name="Create Account"
             />
           </View>
         </View>
 
         <View className="items-center mt-auto mb-20">
           <Text>
-            Don't have an account?
+            Already created an account?
             <Text
               className="text-blue-500"
-              onPress={() => navigation.navigate("CreateAccount")}>
+              onPress={() => navigation.navigate("Login")}>
               {" "}
-              Create an account.
+              Sign In.
             </Text>
           </Text>
         </View>
@@ -95,4 +103,4 @@ function LoginScreen() {
   )
 }
 
-export default LoginScreen
+export default CreateAccountScreen
