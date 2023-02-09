@@ -3,8 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQueryClient } from "react-query"
-import { Retryer } from "react-query/types/core/retryer"
+
 import axios from "../utils/axiosConfig"
+import SelectedList from "./SelectedList"
 
 interface props {
   setEditMenuOpen: any
@@ -31,6 +32,17 @@ function EditTaskMenu({
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
   const tasks: task[] | undefined = queryClient.getQueryData(["tasks"])
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("None")
+
+  const data = [
+    { key: "1", value: "None" },
+    { key: "3", value: "Appliances" },
+    { key: "4", value: "Cameras" },
+    { key: "5", value: "Vegetables" },
+    { key: "6", value: "Diary Products" },
+    { key: "7", value: "Drinks" },
+  ]
 
   const { mutate: mutateSaveChanges } = useMutation(
     async (params: [taskNameAux: string, is_done_aux: number]) =>
@@ -193,7 +205,10 @@ function EditTaskMenu({
             value={taskName}
             onChangeText={(text) => setTaskName(text)}></TextInput>
         </View>
-
+        <SelectedList
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+        />
         <Text className="font-semibold text-2xl mt-8">Status:</Text>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -233,6 +248,7 @@ function EditTaskMenu({
             <Fontisto name="radio-btn-passive" color={"black"} size={20} />
           )}
         </TouchableOpacity>
+
         <View className="mt-auto w-full flex-row-reverse">
           <TouchableOpacity
             activeOpacity={0.7}
