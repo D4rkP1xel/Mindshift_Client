@@ -33,7 +33,7 @@ function HomeScreen() {
       return axios
         .post("/task/get", { user_id: userInfoState.id, date: selectedDate })
         .then((res) => {
-          console.log(res.data.tasks)
+          //console.log(res.data.tasks)
           return res.data.tasks
         })
         .catch((err) => {

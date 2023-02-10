@@ -35,15 +35,6 @@ function EditTaskMenu({
 
   const [selectedCategory, setSelectedCategory] = useState<string>("None")
 
-  const data = [
-    { key: "1", value: "None" },
-    { key: "3", value: "Appliances" },
-    { key: "4", value: "Cameras" },
-    { key: "5", value: "Vegetables" },
-    { key: "6", value: "Diary Products" },
-    { key: "7", value: "Drinks" },
-  ]
-
   const { mutate: mutateSaveChanges } = useMutation(
     async (params: [taskNameAux: string, is_done_aux: number]) =>
       await saveTask(...params),
@@ -208,6 +199,7 @@ function EditTaskMenu({
         <SelectedList
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
+          queryClient={queryClient}
         />
         <Text className="font-semibold text-2xl mt-8">Status:</Text>
         <TouchableOpacity
