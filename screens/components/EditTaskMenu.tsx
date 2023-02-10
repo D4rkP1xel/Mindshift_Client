@@ -2,9 +2,10 @@ import { useState } from "react"
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
-import { useMutation, useQueryClient } from "react-query"
+import { useMutation, useQuery, useQueryClient } from "react-query"
 
 import axios from "../utils/axiosConfig"
+import useUserInfo from "../utils/useUserInfo"
 import SelectedList from "./SelectedList"
 
 interface props {
@@ -12,6 +13,7 @@ interface props {
   initialTaskName: string
   id: string
   is_done: number
+  category: string
 }
 
 interface task {
@@ -20,6 +22,7 @@ interface task {
   date: string | number
   user_id: string
   is_done: number
+  task_category_name: string
 }
 
 function EditTaskMenu({
@@ -27,19 +30,42 @@ function EditTaskMenu({
   initialTaskName,
   id,
   is_done,
+  category,
 }: props) {
   const [taskName, setTaskName] = useState(initialTaskName)
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
+  const userInfoState = useUserInfo((state) => state.userInfo)
   const tasks: task[] | undefined = queryClient.getQueryData(["tasks"])
-
-  const [selectedCategory, setSelectedCategory] = useState<string>("None")
+  const { data: categories } = useQuery(["categories"], async () => {
+    return axios
+      .post("/category/get", { user_id: userInfoState.id })
+      .then((res) => {
+        console.log(res.data.categories)
+        return res.data.categories
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  })
+  const [selectedCategory, setSelectedCategory] = useState<string>(category)
 
   const { mutate: mutateSaveChanges } = useMutation(
-    async (params: [taskNameAux: string, is_done_aux: number]) =>
-      await saveTask(...params),
+    async (
+      params: [
+        taskNameAux: string,
+        is_done_aux: number,
+        selected_category_aux: string
+      ]
+    ) => await saveTask(...params),
     {
-      onMutate: (params: [taskNameAux: string, is_done_aux: number]) => {
+      onMutate: (
+        params: [
+          taskNameAux: string,
+          is_done_aux: number,
+          selected_category_aux: string
+        ]
+      ) => {
         if (initialTaskName.trim() !== params[0].trim()) {
           //change task name
           if (params[0].trim().length < 2) return
@@ -87,35 +113,33 @@ function EditTaskMenu({
             }
           )
         }
-      },
-    }
-  )
+        if (category !== params[2]) {
+          queryClient.cancelQueries({ queryKey: ["tasks"] })
+          queryClient.setQueryData(
+            ["tasks"],
+            (prev: task[] | undefined | void) => {
+              if (prev == null) return
 
-  const { mutate: mutateDeleteTask } = useMutation(
-    async (task_id: string) => await deleteTask(task_id),
-    {
-      onMutate: (task_id: string) => {
-        setEditMenuOpen("")
-        queryClient.cancelQueries({ queryKey: ["tasks"] })
-        queryClient.setQueryData(
-          ["tasks"],
-          (prev: task[] | undefined | void) => {
-            if (prev == null) return
-
-            for (let index = 0; index < prev.length; index++) {
-              let task = prev[index]
-              if (task.id === task_id) {
-                prev.splice(index, 1)
-                break
+              for (let index = 0; index < prev.length; index++) {
+                let task = prev[index]
+                if (task.id === id) {
+                  prev[index].task_category_name = params[2]
+                  break
+                }
               }
+              return prev
             }
-            return prev
-          }
-        )
+          )
+        }
       },
     }
   )
-  async function saveTask(taskNameAux: string, is_done_aux: number) {
+
+  async function saveTask(
+    taskNameAux: string,
+    is_done_aux: number,
+    selected_category_aux: string
+  ) {
     if (initialTaskName.trim() !== taskNameAux.trim()) {
       //change task name
       if (taskNameAux.trim().length < 2)
@@ -150,9 +174,43 @@ function EditTaskMenu({
         setEditMenuOpen("")
       }
     }
+    if (category !== selected_category_aux) {
+      try {
+        await axios.post("/task/changeCategory", {
+          task_id: id,
+          task_category_name: selected_category_aux,
+        })
+      } catch (err) {
+        console.log(err)
+        setEditMenuOpen("")
+      }
+    }
     setEditMenuOpen("")
   }
+  const { mutate: mutateDeleteTask } = useMutation(
+    async (task_id: string) => await deleteTask(task_id),
+    {
+      onMutate: (task_id: string) => {
+        setEditMenuOpen("")
+        queryClient.cancelQueries({ queryKey: ["tasks"] })
+        queryClient.setQueryData(
+          ["tasks"],
+          (prev: task[] | undefined | void) => {
+            if (prev == null) return
 
+            for (let index = 0; index < prev.length; index++) {
+              let task = prev[index]
+              if (task.id === task_id) {
+                prev.splice(index, 1)
+                break
+              }
+            }
+            return prev
+          }
+        )
+      },
+    }
+  )
   async function deleteTask(idParam: string) {
     try {
       await axios.post("/task/remove", {
@@ -200,6 +258,7 @@ function EditTaskMenu({
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
           queryClient={queryClient}
+          categories={categories}
         />
         <Text className="font-semibold text-2xl mt-8">Status:</Text>
         <TouchableOpacity
@@ -244,7 +303,9 @@ function EditTaskMenu({
         <View className="mt-auto w-full flex-row-reverse">
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => mutateSaveChanges([taskName, is_done_state])}
+            onPress={() =>
+              mutateSaveChanges([taskName, is_done_state, selectedCategory])
+            }
             className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
             style={{ elevation: 2 }}>
             <Text className="text-white text-lg">Save</Text>

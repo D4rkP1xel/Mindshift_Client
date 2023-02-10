@@ -16,6 +16,7 @@ interface task {
   date: string | number
   user_id: string
   is_done: number
+  task_category_name: string
 }
 
 export const EditMenuContext = createContext<any>(null)
@@ -116,6 +117,10 @@ function HomeScreen() {
           id={isEditMenuOpen}
           is_done={
             tasks.filter((task: task) => task.id === isEditMenuOpen)[0].is_done
+          }
+          category={
+            tasks.filter((task: task) => task.id === isEditMenuOpen)[0]
+              .task_category_name
           }
         />
       ) : null}

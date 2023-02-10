@@ -16,6 +16,7 @@ interface props {
   selectedCategory: string
   setSelectedCategory: Function
   queryClient: any
+  categories: category[] | null | undefined
 }
 interface category {
   id: string | number
@@ -25,22 +26,12 @@ function SelectedList({
   selectedCategory,
   setSelectedCategory,
   queryClient,
+  categories,
 }: props) {
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [isAddCategory, setAddCategory] = useState<boolean>(false)
   const [categoryInput, setCategoryInput] = useState<string>("")
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const { data: categories } = useQuery(["categories"], async () => {
-    return axios
-      .post("/category/get", { user_id: userInfoState.id })
-      .then((res) => {
-        console.log(res.data.categories)
-        return res.data.categories
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-  })
 
   function handlePress(value: string) {
     setSelectedCategory(value)
@@ -53,9 +44,10 @@ function SelectedList({
       onMutate: (category_name: string) => {
         if (
           category_name.length < 2 ||
-          categories
-            .map((category: category) => category.name.toLowerCase())
-            .includes(category_name.toLowerCase())
+          (categories != null &&
+            categories
+              .map((category: category) => category.name.toLowerCase())
+              .includes(category_name.toLowerCase()))
         )
           return
         queryClient.cancelQueries({ queryKey: ["categories"] })
@@ -74,6 +66,7 @@ function SelectedList({
     if (category_name.length < 2)
       return Alert.alert("Category name must have at least 2 letters.")
     if (
+      categories != null &&
       categories
         .map((category: category) => category.name.toLowerCase())
         .includes(category_name.toLowerCase())
@@ -126,21 +119,20 @@ function SelectedList({
                 <Text className="text-white text-base">Add one</Text>
               </TouchableOpacity>
             </View>
-            {isOpenDropDownMenu ? (
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                className="z-50 max-h-36 mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
-                <Text>ywwad</Text>
 
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => handlePress("None")}
-                  className="py-2 px-4 border-b border-gray-300">
-                  <Text className="text-base font-medium">None</Text>
-                </TouchableOpacity>
-                {categories !== null && categories.length > 0
-                  ? [{ name: "None", id: 0 }, ...categories].map(
-                      (value: category) => (
+            {isOpenDropDownMenu ? (
+              <View>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  className="z-50 max-h-36 mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => handlePress("None")}
+                    className="py-2 px-4 border-b border-gray-300">
+                    <Text className="text-base font-medium">None</Text>
+                  </TouchableOpacity>
+                  {categories != null && categories.length > 0
+                    ? categories.map((value: category) => (
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={() => handlePress(value.name)}
@@ -150,10 +142,10 @@ function SelectedList({
                             {value.name}
                           </Text>
                         </TouchableOpacity>
-                      )
-                    )
-                  : null}
-              </ScrollView>
+                      ))
+                    : null}
+                </ScrollView>
+              </View>
             ) : null}
           </>
         ) : (
