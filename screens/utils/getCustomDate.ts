@@ -1,5 +1,4 @@
-export default function getCustomDate():string
+export default function getCustomDate(date:Date):string
 {
-    const date = new Date()
-    return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`
+    return `${date.getUTCFullYear()}-${(date.getUTCMonth() +1).toString().padStart(2, '0')}-${(date.getUTCDate()).toString().padStart(2, '0')}`
 }

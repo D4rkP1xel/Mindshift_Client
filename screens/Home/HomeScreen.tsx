@@ -1,5 +1,5 @@
 import { useState, createContext } from "react"
-import { View, Text, Alert, TextInput } from "react-native"
+import { View, Text, Alert, TextInput, Modal } from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 
@@ -9,7 +9,7 @@ import getCustomDate from "../utils/getCustomDate"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 import Task from "../components/Task"
 import EditTaskMenu from "../components/EditTaskMenu"
-
+import { Calendar } from "react-native-calendars"
 interface task {
   id: string
   name: string
@@ -23,7 +23,8 @@ export const EditMenuContext = createContext<any>(null)
 
 function HomeScreen() {
   const [toDoInput, addToDoInput] = useState("")
-  const [selectedDate, changeSelectedDate] = useState(getCustomDate())
+  const [selectedDate, changeSelectedDate] = useState(getCustomDate(new Date()))
+  const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const queryClient = useQueryClient()
   const [isEditMenuOpen, setEditMenuOpen] = useState<string>("") //either stores an empty string or the id of the task
@@ -107,6 +108,39 @@ function HomeScreen() {
   }
   return (
     <>
+      <Modal transparent={true} visible={isCalendarOpen}>
+        <View
+          className="h-screen w-screen"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}>
+          <View className="mt-32">
+            <Calendar
+              disableAllTouchEventsForDisabledDays={true}
+              minDate={getCustomDate(new Date(userInfoState.creation_date))}
+              initialDate={selectedDate}
+              maxDate={getCustomDate(new Date())}
+              onDayPress={(date) => {
+                changeSelectedDate(date.dateString)
+                setCalendarOpen(false)
+              }}
+              markedDates={{
+                "2023-02-02": {
+                  selected: true,
+                  selectedColor: "#10b981",
+                  selectedTextColor: "white",
+                },
+                "2023-02-03": {
+                  selected: true,
+                  selectedColor: "#fbbf24",
+                  selectedTextColor: "white",
+                },
+              }}
+              hideExtraDays={true}
+            />
+          </View>
+        </View>
+      </Modal>
       {isEditMenuOpen !== "" ? (
         <EditTaskMenu
           setEditMenuOpen={setEditMenuOpen}
@@ -133,7 +167,7 @@ function HomeScreen() {
                 name={"calendar"}
                 color={"black"}
                 size={24}
-                onPress={() => Alert.alert("yes")}
+                onPress={() => setCalendarOpen(true)}
               />
             </View>
           </View>
