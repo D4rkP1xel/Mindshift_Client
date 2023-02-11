@@ -1,4 +1,4 @@
-import { useState, createContext } from "react"
+import { useState, createContext, useEffect } from "react"
 import { View, Text, Alert, TextInput, Modal } from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
@@ -24,10 +24,32 @@ export const EditMenuContext = createContext<any>(null)
 function HomeScreen() {
   const [toDoInput, addToDoInput] = useState("")
   const [selectedDate, changeSelectedDate] = useState(getCustomDate(new Date()))
+  const [shownMonthCalendar, setShownMonthCalendar] = useState(
+    selectedDate.slice(0, 7)
+  )
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const queryClient = useQueryClient()
   const [isEditMenuOpen, setEditMenuOpen] = useState<string>("") //either stores an empty string or the id of the task
+  const { data: calendarPerformance, refetch: refetchCalendarPerformance } =
+    useQuery(["calendar_performance"], async () => {
+      return axios
+        .post("/task/getMonthPerformance", {
+          user_id: userInfoState.id,
+          date: shownMonthCalendar,
+        })
+        .then((res) => {
+          console.log(res.data.data, shownMonthCalendar)
+          return res.data.data
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+
+  useEffect(() => {
+    refetchCalendarPerformance()
+  }, [shownMonthCalendar])
 
   const { data: tasks, isLoading: isLoadingTasks } = useQuery(
     ["tasks"],
@@ -124,18 +146,14 @@ function HomeScreen() {
                 changeSelectedDate(date.dateString)
                 setCalendarOpen(false)
               }}
-              markedDates={{
-                "2023-02-02": {
-                  selected: true,
-                  selectedColor: "#10b981",
-                  selectedTextColor: "white",
-                },
-                "2023-02-03": {
-                  selected: true,
-                  selectedColor: "#fbbf24",
-                  selectedTextColor: "white",
-                },
+              onMonthChange={(date) => {
+                setShownMonthCalendar(
+                  `${date.year}-${date.month.toString().padStart(2, "0")}`
+                )
               }}
+              markedDates={
+                calendarPerformance != null ? calendarPerformance : null
+              }
               hideExtraDays={true}
             />
           </View>
