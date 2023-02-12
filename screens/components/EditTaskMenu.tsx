@@ -14,6 +14,8 @@ interface props {
   id: string
   is_done: number
   category: string
+  selectedDate: string
+  refetchCalendarPerformance: Function
 }
 
 interface task {
@@ -31,17 +33,22 @@ function EditTaskMenu({
   id,
   is_done,
   category,
+  selectedDate,
+  refetchCalendarPerformance,
 }: props) {
   const [taskName, setTaskName] = useState(initialTaskName)
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const tasks: task[] | undefined = queryClient.getQueryData(["tasks"])
+  const tasks: task[] | undefined = queryClient.getQueryData([
+    "tasks",
+    selectedDate,
+  ])
   const { data: categories } = useQuery(["categories"], async () => {
     return axios
       .post("/category/get", { user_id: userInfoState.id })
       .then((res) => {
-        console.log(res.data.categories)
+        //console.log(res.data.categories)
         return res.data.categories
       })
       .catch((err) => {
@@ -78,9 +85,9 @@ function EditTaskMenu({
           )
             return
 
-          queryClient.cancelQueries({ queryKey: ["tasks"] })
+          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
           queryClient.setQueryData(
-            ["tasks"],
+            ["tasks", selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
@@ -96,9 +103,9 @@ function EditTaskMenu({
           )
         }
         if (is_done !== params[1]) {
-          queryClient.cancelQueries({ queryKey: ["tasks"] })
+          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
           queryClient.setQueryData(
-            ["tasks"],
+            ["tasks", selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
@@ -114,9 +121,9 @@ function EditTaskMenu({
           )
         }
         if (category !== params[2]) {
-          queryClient.cancelQueries({ queryKey: ["tasks"] })
+          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
           queryClient.setQueryData(
-            ["tasks"],
+            ["tasks", selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
@@ -131,6 +138,9 @@ function EditTaskMenu({
             }
           )
         }
+      },
+      onSuccess: () => {
+        refetchCalendarPerformance()
       },
     }
   )
@@ -192,14 +202,16 @@ function EditTaskMenu({
     {
       onMutate: (task_id: string) => {
         setEditMenuOpen("")
-        queryClient.cancelQueries({ queryKey: ["tasks"] })
+        queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+
         queryClient.setQueryData(
-          ["tasks"],
+          ["tasks", selectedDate],
           (prev: task[] | undefined | void) => {
-            if (prev == null) return
+            if (prev == null) return []
 
             for (let index = 0; index < prev.length; index++) {
               let task = prev[index]
+
               if (task.id === task_id) {
                 prev.splice(index, 1)
                 break
@@ -208,6 +220,9 @@ function EditTaskMenu({
             return prev
           }
         )
+      },
+      onSuccess: () => {
+        refetchCalendarPerformance()
       },
     }
   )

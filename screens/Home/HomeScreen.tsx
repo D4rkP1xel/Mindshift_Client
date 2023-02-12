@@ -5,7 +5,10 @@ import FontAwesome from "react-native-vector-icons/FontAwesome5"
 
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
-import getCustomDate from "../utils/getCustomDate"
+import getCustomDate, {
+  getDatePrettyFormat,
+  getYesterday,
+} from "../utils/getCustomDate"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 import Task from "../components/Task"
 import EditTaskMenu from "../components/EditTaskMenu"
@@ -39,7 +42,7 @@ function HomeScreen() {
           date: shownMonthCalendar,
         })
         .then((res) => {
-          console.log(res.data.data, shownMonthCalendar)
+          //console.log(res.data.data, shownMonthCalendar)
           return res.data.data
         })
         .catch((err) => {
@@ -47,24 +50,24 @@ function HomeScreen() {
         })
     })
 
-  useEffect(() => {
-    refetchCalendarPerformance()
-  }, [shownMonthCalendar])
-
-  const { data: tasks, isLoading: isLoadingTasks } = useQuery(
-    ["tasks"],
-    async () => {
-      return axios
-        .post("/task/get", { user_id: userInfoState.id, date: selectedDate })
-        .then((res) => {
-          //console.log(res.data.tasks)
-          return res.data.tasks
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-    }
-  )
+  const {
+    data: tasks,
+    isLoading: isLoadingTasks,
+    refetch: refetchTasks,
+  } = useQuery(["tasks", selectedDate], async () => {
+    return axios
+      .post("/task/get", {
+        user_id: userInfoState.id,
+        date: selectedDate,
+      })
+      .then((res) => {
+        //console.log(res.data.tasks)
+        return res.data.tasks
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  })
 
   const { mutate: mutateNewTask } = useMutation(
     async (params) => await handleAddTask(params),
@@ -77,34 +80,43 @@ function HomeScreen() {
             .includes(newTaskName.toLowerCase())
         )
           return
-        queryClient.cancelQueries({ queryKey: ["tasks"] })
-        queryClient.setQueryData(["tasks"], (prev: any) => {
+        queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+        queryClient.setQueryData(["tasks", selectedDate], (prev: any) => {
           return prev == null
             ? [
                 {
                   name: newTaskName,
-                  id: (Math.random() * 1000).toString(),
+                  id: "0",
                   is_done: -1,
+                  task_category_name: "",
                 },
               ]
             : [
                 ...prev,
                 {
                   name: newTaskName,
-                  id: (Math.random() * 1000).toString(),
+                  id: "0",
                   is_done: -1,
+                  task_category_name: "",
                 },
               ]
         })
       },
+      onSuccess: () => {
+        refetchTasks()
+        refetchCalendarPerformance()
+      },
       onError: () => {
-        queryClient.setQueryData(["tasks"], (prev: any) =>
+        queryClient.setQueryData(["tasks", selectedDate], (prev: any) =>
           prev.slice(0, prev.length - 1)
         )
         setEditMenuOpen("")
       },
     }
   )
+  useEffect(() => {
+    refetchCalendarPerformance()
+  }, [shownMonthCalendar])
 
   async function handleAddTask(newTaskName: string) {
     if (newTaskName.length < 2) return Alert.alert("Minimum size is 2 letters.")
@@ -174,12 +186,20 @@ function HomeScreen() {
             tasks.filter((task: task) => task.id === isEditMenuOpen)[0]
               .task_category_name
           }
+          selectedDate={selectedDate}
+          refetchCalendarPerformance={refetchCalendarPerformance}
         />
       ) : null}
       <View className="mt-6">
         <View className="mt-8 px-8">
           <View className="flex-row w-full">
-            <Text className="text-2xl">Today</Text>
+            <Text className="text-2xl">
+              {selectedDate === getCustomDate(new Date())
+                ? "Today"
+                : selectedDate === getYesterday()
+                ? "Yesterday"
+                : getDatePrettyFormat(selectedDate)}
+            </Text>
             <View className="h-fit ml-auto">
               <FontAwesome
                 name={"calendar"}
