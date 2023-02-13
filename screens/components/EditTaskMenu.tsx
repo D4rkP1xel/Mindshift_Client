@@ -159,7 +159,7 @@ function EditTaskMenu({
           task_id: id,
           is_done: is_done_aux,
         })
-        if (is_done_aux === 1) setTaskTimeModal(true)
+        if (is_done_aux === 1) setTaskTimeModal(id)
       } catch (err) {
         console.log(err)
         setEditMenuOpen("")

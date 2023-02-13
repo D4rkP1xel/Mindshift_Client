@@ -1,5 +1,12 @@
-import { useState, createContext, useEffect } from "react"
-import { View, Text, Alert, TextInput, Modal } from "react-native"
+import { useState, useEffect } from "react"
+import {
+  View,
+  Text,
+  Alert,
+  TextInput,
+  Modal,
+  TouchableOpacity,
+} from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import AntDesign from "react-native-vector-icons/AntDesign"
@@ -13,6 +20,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query"
 import Task from "../components/Task"
 import EditTaskMenu from "../components/EditTaskMenu"
 import { Calendar } from "react-native-calendars"
+import { EditMenuContext } from "../utils/context"
 interface task {
   id: string
   name: string
@@ -22,10 +30,8 @@ interface task {
   task_category_name: string
 }
 
-export const EditMenuContext = createContext<any>(null)
-
 function HomeScreen() {
-  const [isTaskTimeModal, setTaskTimeModal] = useState(false)
+  const [isTaskTimeModal, setTaskTimeModal] = useState("no_id")
   const [toDoInput, addToDoInput] = useState("")
   const [taskHoursInput, setTaskHoursInput] = useState(0)
   const [taskMinutesInput, setTaskMinutesInput] = useState(0)
@@ -145,35 +151,82 @@ function HomeScreen() {
   }
   return (
     <>
-      <Modal transparent={true} visible={isTaskTimeModal}>
+      <Modal transparent={true} visible={isTaskTimeModal !== "no_id"}>
         <View
-          className="h-screen w-screen"
+          className="h-screen w-screen z-40"
           style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        />
-        <View className="mt-32 w-10/12 h-60">
-          <View className="flex-row">
-            <AntDesign name={"clockcircleo"} color={"black"} size={32} />
-            <Text>Time spent on this task:</Text>
-          </View>
-          <View className="border border-black rounded-md">
-            <TextInput
-              keyboardType="numeric"
-              className="text-base"
-              multiline={false}
-              value={taskHoursInput.toString()}
-              onChangeText={(text) =>
-                setTaskHoursInput(parseInt(text))
-              }></TextInput>
-            <TextInput
-              keyboardType="numeric"
-              className="text-base"
-              multiline={false}
-              value={taskMinutesInput.toString()}
-              onChangeText={(text) =>
-                setTaskMinutesInput(parseInt(text))
-              }></TextInput>
+          }}>
+          <View className="mt-32 w-10/12 bg-white mx-auto px-8 pt-8 pb-5">
+            <View className="flex-row gap-2 items-center mb-8">
+              <AntDesign name={"clockcircleo"} color={"black"} size={28} />
+              <Text className="text-lg">Time spent on this task:</Text>
+            </View>
+            <View className="flex-row items-center justify-evenly">
+              <View className="flex-row items-center gap-2">
+                <View className="border border-black rounded-md w-8">
+                  <TextInput
+                    keyboardType="number-pad"
+                    className="text-base w-full"
+                    multiline={false}
+                    value={taskHoursInput.toString()}
+                    onChangeText={(text) => {
+                      if (
+                        !Number.isInteger(parseInt(text)) ||
+                        parseInt(text) == null ||
+                        parseInt(text) <= 0
+                      )
+                        setTaskHoursInput(0)
+                      else if (parseInt(text) >= 23) setTaskHoursInput(23)
+                      else setTaskHoursInput(parseInt(text))
+                    }}></TextInput>
+                </View>
+                <Text className="text-base">hours</Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="border border-black rounded-md w-8">
+                  <TextInput
+                    keyboardType="numeric"
+                    className="text-base w-full"
+                    multiline={false}
+                    value={taskMinutesInput.toString()}
+                    onChangeText={(text) => {
+                      if (
+                        !Number.isInteger(parseInt(text)) ||
+                        parseInt(text) == null ||
+                        parseInt(text) <= 0
+                      )
+                        setTaskMinutesInput(0)
+                      else if (parseInt(text) >= 60) setTaskMinutesInput(60)
+                      else setTaskMinutesInput(parseInt(text))
+                    }}></TextInput>
+                </View>
+                <Text className="text-base">minutes</Text>
+              </View>
+            </View>
+            <View className="w-full flex-row justify-end mt-6">
+              <TouchableOpacity
+                style={{ elevation: 2 }}
+                activeOpacity={0.7}
+                className="rounded-full h-8 bg-blue-500 w-4/12 justify-center items-center"
+                onPress={async () => {
+                  if (taskHoursInput !== 0 || taskMinutesInput !== 0) {
+                    try {
+                      await axios.post("/task/changeTaskTime", {
+                        task_id: isTaskTimeModal,
+                        task_time: taskHoursInput * 60 + taskMinutesInput,
+                      })
+                      //Alert.alert("success")
+                    } catch (err) {
+                      console.log(err)
+                      Alert.alert("Server Error")
+                    }
+                  }
+                  setTaskTimeModal("no_id")
+                }}>
+                <Text className="text-white text-base">Save</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

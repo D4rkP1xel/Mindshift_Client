@@ -6,7 +6,7 @@ interface props {
   is_done: number
   id: string
 }
-import { EditMenuContext } from "../Home/HomeScreen"
+import { EditMenuContext } from "../utils/context"
 
 function Task({ name, is_done, id }: props) {
   const setEditMenuOpen = useContext(EditMenuContext)
