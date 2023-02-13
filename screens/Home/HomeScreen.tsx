@@ -2,7 +2,7 @@ import { useState, createContext, useEffect } from "react"
 import { View, Text, Alert, TextInput, Modal } from "react-native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
-
+import AntDesign from "react-native-vector-icons/AntDesign"
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
 import getCustomDate, {
@@ -25,7 +25,10 @@ interface task {
 export const EditMenuContext = createContext<any>(null)
 
 function HomeScreen() {
+  const [isTaskTimeModal, setTaskTimeModal] = useState(false)
   const [toDoInput, addToDoInput] = useState("")
+  const [taskHoursInput, setTaskHoursInput] = useState(0)
+  const [taskMinutesInput, setTaskMinutesInput] = useState(0)
   const [selectedDate, changeSelectedDate] = useState(getCustomDate(new Date()))
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
@@ -142,6 +145,38 @@ function HomeScreen() {
   }
   return (
     <>
+      <Modal transparent={true} visible={isTaskTimeModal}>
+        <View
+          className="h-screen w-screen"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
+        />
+        <View className="mt-32 w-10/12 h-60">
+          <View className="flex-row">
+            <AntDesign name={"clockcircleo"} color={"black"} size={32} />
+            <Text>Time spent on this task:</Text>
+          </View>
+          <View className="border border-black rounded-md">
+            <TextInput
+              keyboardType="numeric"
+              className="text-base"
+              multiline={false}
+              value={taskHoursInput.toString()}
+              onChangeText={(text) =>
+                setTaskHoursInput(parseInt(text))
+              }></TextInput>
+            <TextInput
+              keyboardType="numeric"
+              className="text-base"
+              multiline={false}
+              value={taskMinutesInput.toString()}
+              onChangeText={(text) =>
+                setTaskMinutesInput(parseInt(text))
+              }></TextInput>
+          </View>
+        </View>
+      </Modal>
       <Modal transparent={true} visible={isCalendarOpen}>
         <View
           className="h-screen w-screen"
@@ -188,6 +223,7 @@ function HomeScreen() {
           }
           selectedDate={selectedDate}
           refetchCalendarPerformance={refetchCalendarPerformance}
+          setTaskTimeModal={setTaskTimeModal}
         />
       ) : null}
       <View className="mt-6">

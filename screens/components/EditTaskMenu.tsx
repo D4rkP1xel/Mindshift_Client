@@ -1,12 +1,5 @@
 import { useState } from "react"
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Modal,
-} from "react-native"
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
@@ -23,6 +16,7 @@ interface props {
   category: string
   selectedDate: string
   refetchCalendarPerformance: Function
+  setTaskTimeModal: Function
 }
 
 interface task {
@@ -42,14 +36,13 @@ function EditTaskMenu({
   category,
   selectedDate,
   refetchCalendarPerformance,
+  setTaskTimeModal,
 }: props) {
   const [taskName, setTaskName] = useState(initialTaskName)
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const [isTaskTimeModal, setTaskTimeModal] = useState(false)
-  const [taskHoursInput, setTaskHoursInput] = useState(0)
-  const [taskMinutesInput, setTaskMinutesInput] = useState(0)
+
   const tasks: task[] | undefined = queryClient.getQueryData([
     "tasks",
     selectedDate,
@@ -166,9 +159,7 @@ function EditTaskMenu({
           task_id: id,
           is_done: is_done_aux,
         })
-        if (is_done_aux === 1) {
-          setTaskTimeModal(true)
-        }
+        if (is_done_aux === 1) setTaskTimeModal(true)
       } catch (err) {
         console.log(err)
         setEditMenuOpen("")
@@ -254,38 +245,6 @@ function EditTaskMenu({
 
   return (
     <>
-      <Modal transparent={true} visible={isTaskTimeModal}>
-        <View
-          className="h-screen w-screen"
-          style={{
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        />
-        <View className="mt-32 w-10/12 h-60">
-          <View className="flex-row">
-            <AntDesign name={"clockcircleo"} color={"black"} size={32} />
-            <Text>Time spent on this task:</Text>
-          </View>
-          <View className="border border-black rounded-md">
-            <TextInput
-              keyboardType="numeric"
-              className="text-base"
-              multiline={false}
-              value={taskHoursInput.toString()}
-              onChangeText={(text) =>
-                setTaskHoursInput(parseInt(text))
-              }></TextInput>
-            <TextInput
-              keyboardType="numeric"
-              className="text-base"
-              multiline={false}
-              value={taskMinutesInput.toString()}
-              onChangeText={(text) =>
-                setTaskMinutesInput(parseInt(text))
-              }></TextInput>
-          </View>
-        </View>
-      </Modal>
       <View className="h-screen w-screen fixed">
         <View className="mt-12 px-8 h-full pb-14">
           <View className="flex-row w-full">
