@@ -7,9 +7,11 @@ import {
   Modal,
   TouchableOpacity,
 } from "react-native"
+import { useNavigation } from "@react-navigation/native"
 import Ionicons from "react-native-vector-icons/AntDesign"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import AntDesign from "react-native-vector-icons/AntDesign"
+import Entypo from "react-native-vector-icons/Entypo"
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
 import getCustomDate, {
@@ -29,8 +31,12 @@ interface task {
   is_done: number
   task_category_name: string
 }
+type Nav = {
+  navigate: (value: string) => void
+}
 
 function HomeScreen() {
+  const navigation = useNavigation<Nav>()
   const [isTaskTimeModal, setTaskTimeModal] = useState("no_id")
   const [toDoInput, addToDoInput] = useState("")
   const [taskHoursInput, setTaskHoursInput] = useState(0)
@@ -279,6 +285,7 @@ function HomeScreen() {
           setTaskTimeModal={setTaskTimeModal}
         />
       ) : null}
+
       <View className="mt-6">
         <View className="mt-8 px-8">
           <View className="flex-row w-full">
@@ -290,12 +297,20 @@ function HomeScreen() {
                 : getDatePrettyFormat(selectedDate)}
             </Text>
             <View className="h-fit ml-auto">
-              <FontAwesome
-                name={"calendar"}
-                color={"black"}
-                size={24}
-                onPress={() => setCalendarOpen(true)}
-              />
+              <View className="flex-row gap-6 items-center">
+                <Entypo
+                  name={"line-graph"}
+                  color={"black"}
+                  size={26}
+                  onPress={() => navigation.navigate("Performance")}
+                />
+                <FontAwesome
+                  name={"calendar"}
+                  color={"black"}
+                  size={26}
+                  onPress={() => setCalendarOpen(true)}
+                />
+              </View>
             </View>
           </View>
           <Text className="text-sm text-gray-500">

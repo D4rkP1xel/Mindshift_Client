@@ -42,7 +42,7 @@ function EditTaskMenu({
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
-
+  const [selectedCategory, setSelectedCategory] = useState<string>(category)
   const tasks: task[] | undefined = queryClient.getQueryData([
     "tasks",
     selectedDate,
@@ -58,7 +58,6 @@ function EditTaskMenu({
         console.log(err)
       })
   })
-  const [selectedCategory, setSelectedCategory] = useState<string>(category)
 
   const { mutate: mutateSaveChanges } = useMutation(
     async (

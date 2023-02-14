@@ -4,7 +4,7 @@ import HomeScreen from "./screens/Home/HomeScreen"
 import LoginScreen from "./screens/LoginScreen/LoginScreen"
 import CreateAccountScreen from "./screens/CreateAccountScreen/CreateAccountScreen"
 import { QueryClientProvider, QueryClient } from "react-query"
-
+import PerformanceScreen from "./screens/PerformanceScreen/PerformanceScreen"
 const Stack = createNativeStackNavigator()
 const queryClient = new QueryClient()
 function App() {
@@ -15,6 +15,7 @@ function App() {
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Performance" component={PerformanceScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </QueryClientProvider>
