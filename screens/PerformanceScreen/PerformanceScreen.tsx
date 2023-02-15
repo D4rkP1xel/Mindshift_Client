@@ -24,7 +24,9 @@ type Nav = {
 function PerformanceScreen() {
   const navigation = useNavigation<Nav>()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
+  const [performanceType, setPerformanceType] = useState("monthly")
   const userInfoState = useUserInfo((state) => state.userInfo)
+  const [selectedCategory, setSelectedCategory] = useState<string>("")
   const { data: categories } = useQuery(["categories"], async () => {
     return axios
       .post("/category/get", { user_id: userInfoState.id })
@@ -37,7 +39,70 @@ function PerformanceScreen() {
         console.log(err)
       })
   })
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const { data: performance } = useQuery(
+    ["performance", [selectedCategory, performanceType]],
+    async () => {
+      return axios
+        .post("/category/getPerformance", {
+          user_id: userInfoState.id,
+          category_name: selectedCategory,
+          type: performanceType,
+        })
+        .then((res) => {
+          //console.log(res.data.categories)
+          if (performanceType === "monthly") {
+            let dates: string[] = []
+            const currentDate = [
+              new Date().getUTCFullYear(),
+              new Date().getUTCMonth() + 1,
+            ]
+            for (let i = 12; i >= 0; i--) {
+              if (currentDate[1] - i < 1) {
+                dates.push(
+                  `${currentDate[0] - 1}-${(12 - (i - currentDate[1]))
+                    .toString()
+                    .padStart(2, "0")}`
+                )
+              } else {
+                dates.push(
+                  `${currentDate[0]}-${(currentDate[1] - i)
+                    .toString()
+                    .padStart(2, "0")}`
+                )
+              }
+            }
+            //console.log(dates)
+
+            return dates.map((month: string) => {
+              let auxPerformance = res.data.tasks.filter(
+                (monthPerformance: { date: string; total_time: number }) =>
+                  monthPerformance.date === month
+              )
+              if (auxPerformance.length === 0) {
+                return { date: month, total_time: 0 }
+              }
+              return {
+                date: month,
+                total_time:
+                  auxPerformance[0].total_time !== 0
+                    ? auxPerformance[0].total_time / 60
+                    : 0,
+              }
+            })
+          }
+          return res.data.tasks
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    {
+      enabled:
+        selectedCategory != null &&
+        selectedCategory !== "" &&
+        performanceType != null,
+    }
+  )
   function handlePress(value: string) {
     setSelectedCategory(value)
     setOpenDropDownMenu(false)
@@ -50,27 +115,50 @@ function PerformanceScreen() {
     backgroundGradientToOpacity: 0,
     strokeWidth: 2,
   }
-  const data = {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ],
-    datasets: [
-      {
-        data: [20, 45, 28, 80, 99, 43, 20, 30, 64, 29, 56, 97],
-      },
-    ],
-  }
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ]
+  let data =
+    performance != null && Array.isArray(performance) && performance.length > 0
+      ? {
+          labels: [
+            ...performance.map(
+              (monthPerformance: { date: string; total_time: number }) => {
+                return months[parseInt(monthPerformance.date.slice(5)) - 1]
+              }
+            ),
+          ],
+          datasets: [
+            {
+              data: [
+                ...performance.map(
+                  (monthPerformance: { date: string; total_time: number }) => {
+                    return monthPerformance.total_time
+                  }
+                ),
+              ],
+            },
+          ],
+        }
+      : {
+          labels: [...months],
+          datasets: [
+            {
+              data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+          ],
+        }
   return (
     <View className="mt-6">
       <View className="mt-8">
@@ -93,7 +181,9 @@ function PerformanceScreen() {
             chartConfig={chartConfig}
             withOuterLines={false}
             fromZero={true}
-            formatYLabel={(prev) => parseInt(prev).toString()}
+            formatYLabel={(prev) =>
+              (Math.round(parseFloat(prev) * 10) / 10).toString() + "h"
+            }
           />
         </View>
         <View className="relative">
