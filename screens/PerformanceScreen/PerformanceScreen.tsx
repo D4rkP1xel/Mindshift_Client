@@ -24,7 +24,9 @@ type Nav = {
 function PerformanceScreen() {
   const navigation = useNavigation<Nav>()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
-  const [performanceType, setPerformanceType] = useState("monthly")
+  const [performanceType, setPerformanceType] = useState("daily")
+  const [isOpenPerformanceMenu, setOpenPerformanceMenu] =
+    useState<boolean>(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const { data: categories } = useQuery(["categories"], async () => {
@@ -90,7 +92,77 @@ function PerformanceScreen() {
               }
             })
           }
-          return res.data.tasks
+          if (performanceType === "weekly") {
+            function getMonday(d: Date) {
+              d = new Date(d)
+              var day = d.getDay(),
+                diff = d.getDate() - day + (day == 0 ? -6 : 1)
+              let aux = new Date(d.setDate(diff))
+              return `${aux.getFullYear()}-${(aux.getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}-${aux.getDate().toString().padStart(2, "0")}`
+            }
+            const now = new Date()
+            let dates = []
+            for (let i = 9; i >= 0; i--) {
+              dates.push(
+                getMonday(
+                  new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate() - 7 * i
+                  )
+                )
+              )
+            }
+
+            return dates.map((date) => {
+              let auxPerformance = res.data.tasks.filter(
+                (weeklyPerformance: { date: string; total_time: number }) =>
+                  weeklyPerformance.date.slice(0, 10) === date
+              )
+              if (auxPerformance.length === 0) {
+                return { date: date, total_time: 0 }
+              }
+              return {
+                date: date,
+                total_time:
+                  auxPerformance[0].total_time !== 0
+                    ? auxPerformance[0].total_time / 60
+                    : 0,
+              }
+            })
+          } //daily
+          let dates = []
+          for (let i = 7; i >= 0; i--) {
+            let dateAux = new Date()
+            dateAux.setDate(dateAux.getDate() - i)
+            dates.push(
+              `${dateAux.getFullYear()}-${(dateAux.getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}-${dateAux
+                .getDate()
+                .toString()
+                .padStart(2, "0")}`
+            )
+          }
+
+          return dates.map((date) => {
+            let auxPerformance = res.data.tasks.filter(
+              (dailyPerformance: { date: string; total_time: number }) =>
+                dailyPerformance.date.slice(0, 10) === date
+            )
+            if (auxPerformance.length === 0) {
+              return { date: date, total_time: 0 }
+            }
+            return {
+              date: date,
+              total_time:
+                auxPerformance[0].total_time !== 0
+                  ? auxPerformance[0].total_time / 60
+                  : 0,
+            }
+          })
         })
         .catch((err) => {
           console.log(err)
@@ -129,33 +201,98 @@ function PerformanceScreen() {
     "Nov",
     "Dec",
   ]
+  const daysWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   let data =
     performance != null && Array.isArray(performance) && performance.length > 0
-      ? {
-          labels: [
-            ...performance.map(
-              (monthPerformance: { date: string; total_time: number }) => {
-                return months[parseInt(monthPerformance.date.slice(5)) - 1]
-              }
-            ),
-          ],
-          datasets: [
-            {
-              data: [
-                ...performance.map(
-                  (monthPerformance: { date: string; total_time: number }) => {
-                    return monthPerformance.total_time
-                  }
-                ),
-              ],
-            },
-          ],
-        }
+      ? performanceType === "monthly"
+        ? {
+            labels: [
+              ...performance.map(
+                (monthPerformance: { date: string; total_time: number }) => {
+                  return months[parseInt(monthPerformance.date.slice(5)) - 1]
+                }
+              ),
+            ],
+            datasets: [
+              {
+                data: [
+                  ...performance.map(
+                    (monthPerformance: {
+                      date: string
+                      total_time: number
+                    }) => {
+                      return monthPerformance.total_time
+                    }
+                  ),
+                ],
+              },
+            ],
+          }
+        : performanceType === "weekly"
+        ? {
+            labels: [
+              ...performance.map(
+                (weeklyPerformance: { date: string; total_time: number }) => {
+                  return (
+                    months[parseInt(weeklyPerformance.date.slice(5, 7)) - 1] +
+                    " " +
+                    weeklyPerformance.date.slice(8, 10)
+                  )
+                }
+              ),
+            ],
+            datasets: [
+              {
+                data: [
+                  ...performance.map(
+                    (weeklyPerformance: {
+                      date: string
+                      total_time: number
+                    }) => {
+                      return weeklyPerformance.total_time
+                    }
+                  ),
+                ],
+              },
+            ],
+          }
+        : performanceType === "daily"
+        ? {
+            labels: [
+              ...performance.map(
+                (weeklyPerformance: { date: string; total_time: number }) => {
+                  return daysWeek[new Date(weeklyPerformance.date).getDay()]
+                }
+              ),
+            ],
+            datasets: [
+              {
+                data: [
+                  ...performance.map(
+                    (weeklyPerformance: {
+                      date: string
+                      total_time: number
+                    }) => {
+                      return weeklyPerformance.total_time
+                    }
+                  ),
+                ],
+              },
+            ],
+          }
+        : {
+            labels: [""],
+            datasets: [
+              {
+                data: [0],
+              },
+            ],
+          }
       : {
-          labels: [...months],
+          labels: [""],
           datasets: [
             {
-              data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+              data: [0],
             },
           ],
         }
@@ -177,21 +314,26 @@ function PerformanceScreen() {
           <LineChart
             data={data}
             width={Dimensions.get("window").width}
-            height={220}
+            height={240}
             chartConfig={chartConfig}
             withOuterLines={false}
             fromZero={true}
             formatYLabel={(prev) =>
               (Math.round(parseFloat(prev) * 10) / 10).toString() + "h"
             }
+            xLabelsOffset={performanceType === "weekly" ? 20 : 14}
+            verticalLabelRotation={-90}
           />
         </View>
         <View className="relative">
-          <View className="mt-2 mx-auto w-8/12">
+          <View className="mt-4 flex-row justify-evenly w-full">
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => setOpenDropDownMenu(!isOpenDropDownMenu)}
-              className="rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
+              onPress={() => {
+                setOpenDropDownMenu(!isOpenDropDownMenu)
+                setOpenPerformanceMenu(false)
+              }}
+              className="w-6/12 rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">
                 {selectedCategory === "" ? "None" : selectedCategory}
@@ -202,9 +344,27 @@ function PerformanceScreen() {
                 size={20}
               />
             </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                setOpenPerformanceMenu(!isOpenPerformanceMenu)
+                setOpenDropDownMenu(false)
+              }}
+              className="w-4/12 rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
+              style={{ elevation: 2 }}>
+              <Text className="text-base font-medium">
+                {performanceType.charAt(0).toUpperCase() +
+                  performanceType.slice(1)}
+              </Text>
+              <MaterialIcons
+                name="keyboard-arrow-down"
+                color={"black"}
+                size={20}
+              />
+            </TouchableOpacity>
           </View>
           {isOpenDropDownMenu ? (
-            <View className="absolute top-[50px] w-full">
+            <View className="absolute top-[58px] w-full">
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 className="z-50 max-h-[170px] mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
@@ -221,6 +381,41 @@ function PerformanceScreen() {
                       </TouchableOpacity>
                     ))
                   : null}
+              </ScrollView>
+            </View>
+          ) : null}
+          {isOpenPerformanceMenu ? (
+            <View className="absolute top-[58px] w-full">
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="z-50 max-h-[170px] mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setPerformanceType("daily")
+                    setOpenPerformanceMenu(false)
+                  }}
+                  className="py-2 px-4 border-b border-gray-300">
+                  <Text className="text-base font-medium">Daily</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setPerformanceType("weekly")
+                    setOpenPerformanceMenu(false)
+                  }}
+                  className="py-2 px-4 border-b border-gray-300">
+                  <Text className="text-base font-medium">Weekly</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setPerformanceType("monthly")
+                    setOpenPerformanceMenu(false)
+                  }}
+                  className="py-2 px-4 border-b border-gray-300">
+                  <Text className="text-base font-medium">Monthly</Text>
+                </TouchableOpacity>
               </ScrollView>
             </View>
           ) : null}
