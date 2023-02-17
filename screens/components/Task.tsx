@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { View, Text } from "react-native"
+import { View, Text, Keyboard } from "react-native"
 
 interface props {
   name: string
@@ -21,7 +21,10 @@ function Task({ name, is_done, id }: props) {
           : "py-2 border-b border-green-600 mb-4"
       }>
       <Text
-        onPress={() => (id !== "0" ? setEditMenuOpen(id) : null)}
+        onPress={() => {
+          id !== "0" ? setEditMenuOpen(id) : null
+          Keyboard.dismiss()
+        }}
         className="text-base">
         {name}
       </Text>

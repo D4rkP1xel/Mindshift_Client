@@ -6,6 +6,8 @@ import {
   TextInput,
   Modal,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import Ionicons from "react-native-vector-icons/AntDesign"
@@ -285,76 +287,77 @@ function HomeScreen() {
           setTaskTimeModal={setTaskTimeModal}
         />
       ) : null}
-
-      <View className="mt-6">
-        <View className="mt-8 px-8">
-          <View className="flex-row w-full">
-            <Text className="text-2xl">
-              {selectedDate === getCustomDate(new Date())
-                ? "Today"
-                : selectedDate === getYesterday()
-                ? "Yesterday"
-                : getDatePrettyFormat(selectedDate)}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="mt-6 h-screen">
+          <View className="mt-8 px-8">
+            <View className="flex-row w-full">
+              <Text className="text-2xl">
+                {selectedDate === getCustomDate(new Date())
+                  ? "Today"
+                  : selectedDate === getYesterday()
+                  ? "Yesterday"
+                  : getDatePrettyFormat(selectedDate)}
+              </Text>
+              <View className="h-fit ml-auto">
+                <View className="flex-row gap-6 items-center">
+                  <Entypo
+                    name={"line-graph"}
+                    color={"black"}
+                    size={26}
+                    onPress={() => navigation.navigate("Performance")}
+                  />
+                  <FontAwesome
+                    name={"calendar"}
+                    color={"black"}
+                    size={26}
+                    onPress={() => setCalendarOpen(true)}
+                  />
+                </View>
+              </View>
+            </View>
+            <Text className="text-sm text-gray-500">
+              {tasks != null
+                ? `${tasks.filter((task: task) => task.is_done === 1).length}/${
+                    tasks.length
+                  }`
+                : "0/0"}
             </Text>
-            <View className="h-fit ml-auto">
-              <View className="flex-row gap-6 items-center">
-                <Entypo
-                  name={"line-graph"}
+            <View className="mt-6 flex-row w-full">
+              <View className="border-b w-10/12">
+                <TextInput
+                  multiline={false}
+                  value={toDoInput}
+                  onChangeText={(text) => addToDoInput(text)}></TextInput>
+              </View>
+              <View className="ml-auto">
+                <Ionicons
+                  onPress={() => mutateNewTask(toDoInput.trim())}
+                  name={"plus"}
                   color={"black"}
-                  size={26}
-                  onPress={() => navigation.navigate("Performance")}
-                />
-                <FontAwesome
-                  name={"calendar"}
-                  color={"black"}
-                  size={26}
-                  onPress={() => setCalendarOpen(true)}
+                  size={24}
                 />
               </View>
             </View>
-          </View>
-          <Text className="text-sm text-gray-500">
-            {tasks != null
-              ? `${tasks.filter((task: task) => task.is_done === 1).length}/${
-                  tasks.length
-                }`
-              : "0/0"}
-          </Text>
-          <View className="mt-6 flex-row w-full">
-            <View className="border-b w-10/12">
-              <TextInput
-                multiline={false}
-                value={toDoInput}
-                onChangeText={(text) => addToDoInput(text)}></TextInput>
+            <View className="mt-8">
+              <EditMenuContext.Provider value={setEditMenuOpen}>
+                {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
+                  tasks.map((task: task) => {
+                    return (
+                      <Task
+                        name={task.name}
+                        is_done={task.is_done}
+                        id={task.id}
+                        key={task.id}></Task>
+                    )
+                  })
+                ) : isLoadingTasks ? null : (
+                  <Text>No tasks added for this day</Text>
+                )}
+              </EditMenuContext.Provider>
             </View>
-            <View className="ml-auto">
-              <Ionicons
-                onPress={() => mutateNewTask(toDoInput.trim())}
-                name={"plus"}
-                color={"black"}
-                size={24}
-              />
-            </View>
-          </View>
-          <View className="mt-8">
-            <EditMenuContext.Provider value={setEditMenuOpen}>
-              {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
-                tasks.map((task: task) => {
-                  return (
-                    <Task
-                      name={task.name}
-                      is_done={task.is_done}
-                      id={task.id}
-                      key={task.id}></Task>
-                  )
-                })
-              ) : isLoadingTasks ? null : (
-                <Text>No tasks added for this day</Text>
-              )}
-            </EditMenuContext.Provider>
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </>
   )
 }

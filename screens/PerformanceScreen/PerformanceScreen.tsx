@@ -41,6 +41,24 @@ function PerformanceScreen() {
         console.log(err)
       })
   })
+
+  const { data: performanceStats } = useQuery(
+    ["performance_stats", selectedCategory],
+    async () => {
+      return axios
+        .post("/category/getPerformanceStats", {
+          user_id: userInfoState.id,
+          category_name: selectedCategory,
+        })
+        .then((res) => {
+          return res.data.data[0]
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    { enabled: selectedCategory != null && selectedCategory !== "" }
+  )
   const { data: performance } = useQuery(
     ["performance", [selectedCategory, performanceType]],
     async () => {
@@ -424,14 +442,33 @@ function PerformanceScreen() {
           <Text className="text-lg">Total hours spent in:</Text>
           <Text className="text-base  mt-2">
             Last 7 days:
-            <Text className="font-bold"> 20 hours</Text>
+            <Text className="font-bold">
+              {performanceStats != null
+                ? ` ${Math.floor(
+                    parseInt(performanceStats.total_time_week) / 60
+                  )} hours`
+                : " 0 hours"}
+            </Text>
           </Text>
           <Text className="text-base mt-2">
             Last 30 days:
-            <Text className="font-bold"> 87 hours</Text>
+            <Text className="font-bold">
+              {performanceStats != null
+                ? ` ${Math.floor(
+                    parseInt(performanceStats.total_time_month) / 60
+                  )} hours`
+                : " 0 hours"}
+            </Text>
           </Text>
           <Text className="mt-12 text-xl">
-            Total time spent: <Text className="font-bold"> 345 hours</Text>
+            Total time spent:{" "}
+            <Text className="font-bold">
+              {performanceStats != null
+                ? ` ${Math.floor(
+                    parseInt(performanceStats.total_time) / 60
+                  )} hours`
+                : " 0 hours"}
+            </Text>
           </Text>
         </View>
       </View>
