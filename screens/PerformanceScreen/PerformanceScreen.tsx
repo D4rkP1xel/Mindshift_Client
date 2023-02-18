@@ -443,30 +443,46 @@ function PerformanceScreen() {
           <Text className="text-base  mt-2">
             Last 7 days:
             <Text className="font-bold">
-              {performanceStats != null
+              {performanceStats != null &&
+              performanceStats.total_time_week != null
                 ? ` ${Math.floor(
                     parseInt(performanceStats.total_time_week) / 60
-                  )} hours`
+                  )} ${
+                    Math.floor(
+                      parseInt(performanceStats.total_time_week) / 60
+                    ) === 1
+                      ? "hour"
+                      : "hours"
+                  }`
                 : " 0 hours"}
             </Text>
           </Text>
           <Text className="text-base mt-2">
             Last 30 days:
             <Text className="font-bold">
-              {performanceStats != null
+              {performanceStats != null &&
+              performanceStats.total_time_month != null
                 ? ` ${Math.floor(
                     parseInt(performanceStats.total_time_month) / 60
-                  )} hours`
+                  )} ${
+                    Math.floor(
+                      parseInt(performanceStats.total_time_month) / 60
+                    ) === 1
+                      ? "hour"
+                      : "hours"
+                  }`
                 : " 0 hours"}
             </Text>
           </Text>
           <Text className="mt-12 text-xl">
             Total time spent:{" "}
             <Text className="font-bold">
-              {performanceStats != null
-                ? ` ${Math.floor(
-                    parseInt(performanceStats.total_time) / 60
-                  )} hours`
+              {performanceStats != null && performanceStats.total_time != null
+                ? ` ${Math.floor(parseInt(performanceStats.total_time) / 60)} ${
+                    Math.floor(parseInt(performanceStats.total_time) / 60) === 1
+                      ? "hour"
+                      : "hours"
+                  }`
                 : " 0 hours"}
             </Text>
           </Text>

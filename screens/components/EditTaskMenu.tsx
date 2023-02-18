@@ -24,7 +24,7 @@ interface props {
   category: string
   selectedDate: string
   refetchCalendarPerformance: Function
-  setTaskTimeModal: Function
+  task_time: number
 }
 
 interface task {
@@ -34,6 +34,7 @@ interface task {
   user_id: string
   is_done: number
   task_category_name: string
+  task_time: number
 }
 
 function EditTaskMenu({
@@ -44,13 +45,19 @@ function EditTaskMenu({
   category,
   selectedDate,
   refetchCalendarPerformance,
-  setTaskTimeModal,
+  task_time,
 }: props) {
   const [taskName, setTaskName] = useState(initialTaskName)
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [selectedCategory, setSelectedCategory] = useState<string>(category)
+  const [taskHoursInput, setTaskHoursInput] = useState(
+    Math.floor(task_time / 60)
+  )
+  const [taskMinutesInput, setTaskMinutesInput] = useState(
+    task_time - Math.floor(task_time / 60) * 60
+  )
   const tasks: task[] | undefined = queryClient.getQueryData([
     "tasks",
     selectedDate,
@@ -72,7 +79,8 @@ function EditTaskMenu({
       params: [
         taskNameAux: string,
         is_done_aux: number,
-        selected_category_aux: string
+        selected_category_aux: string,
+        task_time_aux: number
       ]
     ) => await saveTask(...params),
     {
@@ -80,7 +88,8 @@ function EditTaskMenu({
         params: [
           taskNameAux: string,
           is_done_aux: number,
-          selected_category_aux: string
+          selected_category_aux: string,
+          task_time_aux: number
         ]
       ) => {
         if (initialTaskName.trim() !== params[0].trim()) {
@@ -148,6 +157,24 @@ function EditTaskMenu({
             }
           )
         }
+        if (task_time !== params[3]) {
+          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+          queryClient.setQueryData(
+            ["tasks", selectedDate],
+            (prev: task[] | undefined | void) => {
+              if (prev == null) return
+
+              for (let index = 0; index < prev.length; index++) {
+                let task = prev[index]
+                if (task.id === id) {
+                  prev[index].task_time = params[3]
+                  break
+                }
+              }
+              return prev
+            }
+          )
+        }
       },
       onSuccess: () => {
         refetchCalendarPerformance()
@@ -158,7 +185,8 @@ function EditTaskMenu({
   async function saveTask(
     taskNameAux: string,
     is_done_aux: number,
-    selected_category_aux: string
+    selected_category_aux: string,
+    task_time_aux: number
   ) {
     if (is_done !== is_done_aux) {
       try {
@@ -166,7 +194,6 @@ function EditTaskMenu({
           task_id: id,
           is_done: is_done_aux,
         })
-        if (is_done_aux === 1) setTaskTimeModal(id)
       } catch (err) {
         console.log(err)
         setEditMenuOpen("")
@@ -201,6 +228,18 @@ function EditTaskMenu({
         await axios.post("/task/changeCategory", {
           task_id: id,
           task_category_name: selected_category_aux,
+        })
+      } catch (err) {
+        console.log(err)
+        setEditMenuOpen("")
+      }
+    }
+
+    if (task_time_aux !== task_time) {
+      try {
+        await axios.post("/task/changeTaskTime", {
+          task_id: id,
+          task_time: task_time_aux,
         })
       } catch (err) {
         console.log(err)
@@ -289,6 +328,51 @@ function EditTaskMenu({
               queryClient={queryClient}
               categories={categories}
             />
+            <Text className="font-semibold text-2xl mt-8 mb-4">Task time:</Text>
+
+            <View className="flex-row items-center">
+              <View className="flex-row items-center gap-2">
+                <View className="border-2 border-black rounded-md w-10 bg-white">
+                  <TextInput
+                    keyboardType="number-pad"
+                    className="text-lg w-full"
+                    multiline={false}
+                    value={taskHoursInput.toString()}
+                    onChangeText={(text) => {
+                      if (
+                        !Number.isInteger(parseInt(text)) ||
+                        parseInt(text) == null ||
+                        parseInt(text) <= 0
+                      )
+                        setTaskHoursInput(0)
+                      else if (parseInt(text) >= 23) setTaskHoursInput(23)
+                      else setTaskHoursInput(parseInt(text))
+                    }}></TextInput>
+                </View>
+                <Text className="text-lg mr-12">hours</Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="border-2 border-black rounded-md w-10 bg-white">
+                  <TextInput
+                    keyboardType="numeric"
+                    className="text-lg w-full"
+                    multiline={false}
+                    value={taskMinutesInput.toString()}
+                    onChangeText={(text) => {
+                      if (
+                        !Number.isInteger(parseInt(text)) ||
+                        parseInt(text) == null ||
+                        parseInt(text) <= 0
+                      )
+                        setTaskMinutesInput(0)
+                      else if (parseInt(text) >= 60) setTaskMinutesInput(60)
+                      else setTaskMinutesInput(parseInt(text))
+                    }}></TextInput>
+                </View>
+                <Text className="text-lg">minutes</Text>
+              </View>
+            </View>
+
             <Text className="font-semibold text-2xl mt-8">Status:</Text>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -333,7 +417,12 @@ function EditTaskMenu({
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() =>
-                  mutateSaveChanges([taskName, is_done_state, selectedCategory])
+                  mutateSaveChanges([
+                    taskName,
+                    is_done_state,
+                    selectedCategory,
+                    taskHoursInput * 60 + taskMinutesInput,
+                  ])
                 }
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
                 style={{ elevation: 2 }}>

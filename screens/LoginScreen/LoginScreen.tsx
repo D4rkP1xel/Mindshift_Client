@@ -13,6 +13,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 import axios from "../utils/axiosConfig"
 import useUserInfo from "../utils/useUserInfo"
+
 type Nav = {
   navigate: (value: string) => void
 }
@@ -24,6 +25,7 @@ interface loginResponse {
     | undefined
   error: string | undefined
 }
+
 function LoginScreen() {
   let [emailInput, setEmailInput] = useState("")
   let [passwordInput, setPasswordInput] = useState("")

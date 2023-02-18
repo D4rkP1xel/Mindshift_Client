@@ -1,3 +1,4 @@
 import axios from "axios";
+import envs from "../../config/env"
 
-export default axios.create({baseURL: process.env.RAILWAY_STATIC_URL !== undefined ? process.env.RAILWAY_STATIC_URL : "http://10.0.2.2:3001"})
+export default axios.create({baseURL: envs.API_URL})
