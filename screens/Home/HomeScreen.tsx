@@ -2,25 +2,22 @@ import { useState, useEffect } from "react"
 import {
   View,
   Text,
-  Alert,
-  TextInput,
   Modal,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import Ionicons from "react-native-vector-icons/AntDesign"
+import Octicons from "react-native-vector-icons/Octicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
-import AntDesign from "react-native-vector-icons/AntDesign"
 import Entypo from "react-native-vector-icons/Entypo"
 import useUserInfo from "../utils/useUserInfo"
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import axios from "../utils/axiosConfig"
 import getCustomDate, {
   getDatePrettyFormat,
   getYesterday,
 } from "../utils/getCustomDate"
-import { useMutation, useQuery, useQueryClient } from "react-query"
+import { useQuery } from "react-query"
 import Task from "../components/Task"
 import EditTaskMenu from "../components/EditTaskMenu"
 import { Calendar } from "react-native-calendars"
@@ -34,19 +31,17 @@ interface task {
   task_category_name: string
 }
 type Nav = {
-  navigate: (value: string) => void
+  navigate: (value: string, params: object | void) => void
 }
 
 function HomeScreen() {
   const navigation = useNavigation<Nav>()
-  const [toDoInput, addToDoInput] = useState("")
   const [selectedDate, changeSelectedDate] = useState(getCustomDate(new Date()))
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const queryClient = useQueryClient()
   const [isEditMenuOpen, setEditMenuOpen] = useState<string>("") //either stores an empty string or the id of the task
   const { data: calendarPerformance, refetch: refetchCalendarPerformance } =
     useQuery(["calendar_performance"], async () => {
@@ -64,126 +59,62 @@ function HomeScreen() {
         })
     })
 
-  const {
-    data: tasks,
-    isLoading: isLoadingTasks,
-    refetch: refetchTasks,
-  } = useQuery(["tasks", selectedDate], async () => {
-    return axios
-      .post("/task/get", {
-        user_id: userInfoState.id,
-        date: selectedDate,
-      })
-      .then((res) => {
-        //console.log(res.data.tasks)
-        return res.data.tasks
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-  })
-
-  const { mutate: mutateNewTask } = useMutation(
-    async (params) => await handleAddTask(params),
-    {
-      onMutate: (newTaskName: string) => {
-        if (newTaskName.length < 2) return
-        if (
-          tasks
-            .map((task: task) => task.name.toLowerCase())
-            .includes(newTaskName.toLowerCase())
-        )
-          return
-        queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
-        queryClient.setQueryData(["tasks", selectedDate], (prev: any) => {
-          return prev == null
-            ? [
-                {
-                  name: newTaskName,
-                  id: "0",
-                  is_done: -1,
-                  task_category_name: "",
-                },
-              ]
-            : [
-                ...prev,
-                {
-                  name: newTaskName,
-                  id: "0",
-                  is_done: -1,
-                  task_category_name: "",
-                },
-              ]
+  const { data: tasks, isLoading: isLoadingTasks } = useQuery(
+    ["tasks", selectedDate],
+    async () => {
+      return axios
+        .post("/task/get", {
+          user_id: userInfoState.id,
+          date: selectedDate,
         })
-      },
-      onSuccess: () => {
-        refetchTasks()
-        refetchCalendarPerformance()
-      },
-      onError: () => {
-        queryClient.setQueryData(["tasks", selectedDate], (prev: any) =>
-          prev.slice(0, prev.length - 1)
-        )
-        setEditMenuOpen("")
-      },
+        .then((res) => {
+          //console.log(res.data.tasks)
+          return res.data.tasks
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   )
+
   useEffect(() => {
     refetchCalendarPerformance()
   }, [shownMonthCalendar])
 
-  async function handleAddTask(newTaskName: string) {
-    if (newTaskName.length < 2) return Alert.alert("Minimum size is 2 letters.")
-    if (
-      tasks
-        .map((task: task) => task.name.toLowerCase())
-        .includes(newTaskName.toLowerCase())
-    )
-      return Alert.alert("Task already exists")
-    try {
-      await axios.post("/task/add", {
-        user_id: userInfoState.id,
-        task_name: newTaskName,
-        task_date: selectedDate,
-      })
-      Alert.alert("Task added with success")
-      addToDoInput("")
-    } catch (err) {
-      console.log(err)
-      Alert.alert("Error adding new task")
-      throw new Error("oh noo")
-    }
-  }
   return (
     <>
       <Modal transparent={true} visible={isCalendarOpen}>
-        <View
+        <TouchableWithoutFeedback
           className="h-screen w-screen"
-          style={{
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}>
-          <View className="mt-32">
-            <Calendar
-              disableAllTouchEventsForDisabledDays={true}
-              minDate={getCustomDate(new Date(userInfoState.creation_date))}
-              initialDate={selectedDate}
-              maxDate={getCustomDate(new Date())}
-              onDayPress={(date) => {
-                changeSelectedDate(date.dateString)
-                setCalendarOpen(false)
-              }}
-              onMonthChange={(date) => {
-                setShownMonthCalendar(
-                  `${date.year}-${date.month.toString().padStart(2, "0")}`
-                )
-              }}
-              markedDates={
-                calendarPerformance != null ? calendarPerformance : null
-              }
-              hideExtraDays={true}
-            />
+          onPress={() => setCalendarOpen(false)}>
+          <View
+            className="h-screen w-screen"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+            }}>
+            <View className="mt-32">
+              <Calendar
+                disableAllTouchEventsForDisabledDays={true}
+                minDate={getCustomDate(new Date(userInfoState.creation_date))}
+                initialDate={selectedDate}
+                maxDate={getCustomDate(new Date())}
+                onDayPress={(date) => {
+                  changeSelectedDate(date.dateString)
+                  setCalendarOpen(false)
+                }}
+                onMonthChange={(date) => {
+                  setShownMonthCalendar(
+                    `${date.year}-${date.month.toString().padStart(2, "0")}`
+                  )
+                }}
+                markedDates={
+                  calendarPerformance != null ? calendarPerformance : null
+                }
+                hideExtraDays={true}
+              />
+            </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
       {isEditMenuOpen !== "" ? (
         <EditTaskMenu
@@ -221,6 +152,12 @@ function HomeScreen() {
               </Text>
               <View className="h-fit ml-auto">
                 <View className="flex-row gap-6 items-center">
+                  <MaterialIcons
+                    name={"settings"}
+                    color={"black"}
+                    size={26}
+                    onPress={() => navigation.navigate("Settings")}
+                  />
                   <Entypo
                     name={"line-graph"}
                     color={"black"}
@@ -233,6 +170,17 @@ function HomeScreen() {
                     size={26}
                     onPress={() => setCalendarOpen(true)}
                   />
+
+                  <Octicons
+                    onPress={() =>
+                      navigation.navigate("AddTask", {
+                        selectedDate: selectedDate,
+                      })
+                    }
+                    name={"plus"}
+                    color={"black"}
+                    size={26}
+                  />
                 </View>
               </View>
             </View>
@@ -243,22 +191,6 @@ function HomeScreen() {
                   }`
                 : "0/0"}
             </Text>
-            <View className="mt-6 flex-row w-full">
-              <View className="border-b w-10/12">
-                <TextInput
-                  multiline={false}
-                  value={toDoInput}
-                  onChangeText={(text) => addToDoInput(text)}></TextInput>
-              </View>
-              <View className="ml-auto">
-                <Ionicons
-                  onPress={() => mutateNewTask(toDoInput.trim())}
-                  name={"plus"}
-                  color={"black"}
-                  size={24}
-                />
-              </View>
-            </View>
             <View className="mt-8">
               <EditMenuContext.Provider value={setEditMenuOpen}>
                 {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (

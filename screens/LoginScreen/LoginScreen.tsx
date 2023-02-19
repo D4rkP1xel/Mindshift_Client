@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Text,
   View,
@@ -31,6 +31,14 @@ function LoginScreen() {
   let [passwordInput, setPasswordInput] = useState("")
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
+  const userInfoState = useUserInfo((state) => state.userInfo)
+
+  useEffect(() => {
+    if (userInfoState.id !== undefined && userInfoState.id !== null) {
+      navigation.navigate("Home")
+    }
+  }, [userInfoState])
+
   async function signIn(input: string, password: string) {
     let requestBody = input.includes("@")
       ? { email: input, password: password }
@@ -39,11 +47,16 @@ function LoginScreen() {
       let response = await axios.post<loginResponse>("/user/login", requestBody)
       if (response.data.message === "User logged with success") {
         setUserInfo({ ...response.data.user_data })
+        setEmailInput("")
+        setPasswordInput("")
         navigation.navigate("Home")
       } else if (response.data.message === "User doesnt exist") {
         Alert.alert("Username/Email is not registered")
+        setEmailInput("")
+        setPasswordInput("")
       } else if (response.data.message === "Wrong password") {
         Alert.alert("Wrong Password")
+        setPasswordInput("")
       } else {
         Alert.alert("Unknown Error, try again")
       }
