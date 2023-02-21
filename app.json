@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MindShift",
-    "slug": "MindShift",
+    "slug": "ToDoMobileApp",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/mindshift-icon.png",
