@@ -7,6 +7,7 @@ import {
 } from "react-native"
 import { useState } from "react"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useNavigation } from "@react-navigation/native"
 import useUserInfo from "../utils/useUserInfo"
 import Octicons from "react-native-vector-icons/Octicons"
@@ -315,7 +316,7 @@ function PerformanceScreen() {
           ],
         }
   return (
-    <View className="mt-6">
+    <SafeAreaView>
       <View className="mt-8">
         <View className="flex-row w-full px-8">
           <Text className="text-2xl">Your Performance</Text>
@@ -488,7 +489,7 @@ function PerformanceScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

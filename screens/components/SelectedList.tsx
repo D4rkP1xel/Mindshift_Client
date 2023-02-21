@@ -5,11 +5,13 @@ import {
   View,
   TextInput,
   Alert,
+  Keyboard,
+  ActivityIndicator,
 } from "react-native"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useState } from "react"
 import Ionicons from "react-native-vector-icons/AntDesign"
-import { useMutation, useQuery } from "react-query"
+import { useMutation } from "react-query"
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
 interface props {
@@ -17,6 +19,8 @@ interface props {
   setSelectedCategory: Function
   queryClient: any
   categories: category[] | null | undefined
+  isOpenDropDownMenu: boolean
+  setOpenDropDownMenu: Function
 }
 interface category {
   id: string | number
@@ -27,11 +31,13 @@ function SelectedList({
   setSelectedCategory,
   queryClient,
   categories,
+  isOpenDropDownMenu,
+  setOpenDropDownMenu,
 }: props) {
-  const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [isAddCategory, setAddCategory] = useState<boolean>(false)
   const [categoryInput, setCategoryInput] = useState<string>("")
   const userInfoState = useUserInfo((state) => state.userInfo)
+  const [isLoadingNewCategory, setLoadingNewCategory] = useState(false)
 
   function handlePress(value: string) {
     setSelectedCategory(value)
@@ -54,8 +60,20 @@ function SelectedList({
         queryClient.setQueryData(
           ["categories"],
           (prev: category[] | undefined | void) => {
-            if (prev == null) return [{ name: category_name, id: null }]
-            return [...prev, { name: category_name, id: null }]
+            if (prev == null)
+              return [
+                {
+                  name: category_name,
+                  id: Math.round(Math.random() * 10000).toString(),
+                },
+              ]
+            return [
+              ...prev,
+              {
+                name: category_name,
+                id: Math.round(Math.random() * 10000).toString(),
+              },
+            ]
           }
         )
       },
@@ -63,25 +81,31 @@ function SelectedList({
   )
 
   async function addCategory(category_name: string) {
-    if (category_name.length < 2)
+    if (category_name.length < 2) {
+      setLoadingNewCategory(false)
       return Alert.alert("Category name must have at least 2 letters.")
+    }
+
     if (
       categories != null &&
       categories
         .map((category: category) => category.name.toLowerCase())
         .includes(category_name.toLowerCase())
-    )
+    ) {
+      setLoadingNewCategory(false)
       return Alert.alert("Category already exists.")
+    }
 
     try {
       await axios.post("/category/add", {
         user_id: userInfoState.id,
         category_name: category_name,
       })
+      setLoadingNewCategory(false)
       setAddCategory(false)
       setCategoryInput("")
-      Alert.alert("Category added with success")
     } catch (err) {
+      setLoadingNewCategory(false)
       console.log(err)
       Alert.alert("Server Error: cannot add category.")
     }
@@ -95,7 +119,10 @@ function SelectedList({
             <View className="flex-row gap-2 w-full items-center justify-between">
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => setOpenDropDownMenu(!isOpenDropDownMenu)}
+                onPress={() => {
+                  setOpenDropDownMenu(!isOpenDropDownMenu)
+                  Keyboard.dismiss()
+                }}
                 className="w-8/12 rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
                 style={{ elevation: 2 }}>
                 <Text className="text-base font-medium">
@@ -111,6 +138,7 @@ function SelectedList({
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
+                  Keyboard.dismiss()
                   setAddCategory(true)
                   setOpenDropDownMenu(false)
                 }}
@@ -156,6 +184,7 @@ function SelectedList({
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
+                  Keyboard.dismiss()
                   setAddCategory(false)
                   setCategoryInput("")
                 }}
@@ -179,12 +208,21 @@ function SelectedList({
                   onChangeText={(text) => setCategoryInput(text)}></TextInput>
               </View>
               <View className="ml-auto">
-                <Ionicons
-                  onPress={() => mutateAddCategory(categoryInput.trim())}
-                  name={"plus"}
-                  color={"black"}
-                  size={24}
-                />
+                {isLoadingNewCategory ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Ionicons
+                    onPress={() => {
+                      if (isLoadingNewCategory) return
+                      setLoadingNewCategory(true)
+                      Keyboard.dismiss()
+                      mutateAddCategory(categoryInput.trim())
+                    }}
+                    name={"plus"}
+                    color={"black"}
+                    size={24}
+                  />
+                )}
               </View>
             </View>
           </>

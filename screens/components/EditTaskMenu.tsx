@@ -7,7 +7,9 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
@@ -48,10 +50,12 @@ function EditTaskMenu({
   task_time,
 }: props) {
   const [taskName, setTaskName] = useState(initialTaskName)
+  const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [is_done_state, set_is_done_state] = useState(is_done)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [selectedCategory, setSelectedCategory] = useState<string>(category)
+  const [isLoadingEditTask, setLoadingEditTask] = useState(false)
   const [taskHoursInput, setTaskHoursInput] = useState(
     Math.floor(task_time / 60)
   )
@@ -195,28 +199,36 @@ function EditTaskMenu({
           is_done: is_done_aux,
         })
       } catch (err) {
+        setLoadingEditTask(false)
         console.log(err)
         setEditMenuOpen("")
       }
     }
     if (initialTaskName.trim() !== taskNameAux.trim()) {
       //change task name
-      if (taskNameAux.trim().length < 2)
+      if (taskNameAux.trim().length < 2) {
+        setLoadingEditTask(false)
         return Alert.alert("Minimum task name size is 2 letters.")
+      }
+
       if (
         tasks != null &&
         tasks
           .filter((task: task) => task.id !== id)
           .map((task: task) => task.name.toLowerCase())
           .includes(taskNameAux.trim().toLowerCase())
-      )
+      ) {
+        setLoadingEditTask(false)
         return Alert.alert("Task name already exists")
+      }
+
       try {
         await axios.post("/task/changename", {
           task_id: id,
           task_name: taskNameAux.trim(),
         })
       } catch (err) {
+        setLoadingEditTask(false)
         console.log(err)
         setEditMenuOpen("")
         return
@@ -230,6 +242,7 @@ function EditTaskMenu({
           task_category_name: selected_category_aux,
         })
       } catch (err) {
+        setLoadingEditTask(false)
         console.log(err)
         setEditMenuOpen("")
       }
@@ -242,10 +255,12 @@ function EditTaskMenu({
           task_time: task_time_aux,
         })
       } catch (err) {
+        setLoadingEditTask(false)
         console.log(err)
         setEditMenuOpen("")
       }
     }
+    setLoadingEditTask(false)
     setEditMenuOpen("")
   }
   const { mutate: mutateDeleteTask } = useMutation(
@@ -291,9 +306,14 @@ function EditTaskMenu({
 
   return (
     <>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="h-screen w-screen fixed">
-          <View className="mt-12 px-8 h-full pb-14">
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss()
+          setOpenDropDownMenu(false)
+        }}
+        accessible={false}>
+        <SafeAreaView>
+          <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">
                 <AntDesign
@@ -318,6 +338,7 @@ function EditTaskMenu({
             <View className="border-b w-10/12 mt-4">
               <TextInput
                 className="text-base"
+                onFocus={() => setOpenDropDownMenu(false)}
                 multiline={false}
                 value={taskName}
                 onChangeText={(text) => setTaskName(text)}></TextInput>
@@ -327,6 +348,8 @@ function EditTaskMenu({
               setSelectedCategory={setSelectedCategory}
               queryClient={queryClient}
               categories={categories}
+              isOpenDropDownMenu={isOpenDropDownMenu}
+              setOpenDropDownMenu={setOpenDropDownMenu}
             />
             <Text className="font-semibold text-2xl mt-8 mb-4">Task time:</Text>
 
@@ -376,7 +399,11 @@ function EditTaskMenu({
             <Text className="font-semibold text-2xl mt-8">Status:</Text>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => set_is_done_state(-1)}
+              onPress={() => {
+                set_is_done_state(-1)
+                setOpenDropDownMenu(false)
+                Keyboard.dismiss()
+              }}
               className="py-2 px-4 border-2 border-red-600 rounded-lg mt-6 bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">Not done</Text>
@@ -388,7 +415,11 @@ function EditTaskMenu({
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => set_is_done_state(0)}
+              onPress={() => {
+                set_is_done_state(0)
+                setOpenDropDownMenu(false)
+                Keyboard.dismiss()
+              }}
               className="py-2 px-4 border-2 border-orange-500 rounded-lg mt-4 bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">
@@ -402,7 +433,11 @@ function EditTaskMenu({
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => set_is_done_state(1)}
+              onPress={() => {
+                set_is_done_state(1)
+                setOpenDropDownMenu(false)
+                Keyboard.dismiss()
+              }}
               className="py-2 px-4 border-2 border-green-600 rounded-lg mt-4 bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">Completed</Text>
@@ -416,21 +451,27 @@ function EditTaskMenu({
             <View className="mt-auto w-full flex-row-reverse">
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() =>
+                onPress={() => {
+                  if (isLoadingEditTask === true) return
+                  setLoadingEditTask(true)
                   mutateSaveChanges([
                     taskName,
                     is_done_state,
                     selectedCategory,
                     taskHoursInput * 60 + taskMinutesInput,
                   ])
-                }
+                }}
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
                 style={{ elevation: 2 }}>
-                <Text className="text-white text-lg">Save</Text>
+                {isLoadingEditTask ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text className="text-white text-lg">Save</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </SafeAreaView>
       </TouchableWithoutFeedback>
     </>
   )

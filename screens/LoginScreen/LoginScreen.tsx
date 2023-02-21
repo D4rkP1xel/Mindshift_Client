@@ -8,12 +8,15 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 import axios from "../utils/axiosConfig"
 import useUserInfo from "../utils/useUserInfo"
-
+import { SafeAreaView } from "react-native-safe-area-context"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -62,14 +65,17 @@ function LoginScreen() {
       }
     } catch (err) {
       console.log(err)
+      Alert.alert("Server Error")
     }
   }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View className="mt-6">
-        <View className="h-screen justify-center items-center">
-          <View className="w-full items-center gap-5 mt-36">
-            <View className="mb-6">
+      <SafeAreaView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="justify-center items-center mt-44">
+          <View className="w-full items-center gap-5 mb-6">
+            <View className="mb-2">
               <Image
                 className="w-48"
                 resizeMode="contain"
@@ -105,7 +111,7 @@ function LoginScreen() {
             </View>
           </View>
 
-          <View className="items-center mt-auto mb-20">
+          <View className="items-center mb-20">
             <Text>
               Don't have an account?
               <Text
@@ -116,8 +122,8 @@ function LoginScreen() {
               </Text>
             </Text>
           </View>
-        </View>
-      </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   )
 }

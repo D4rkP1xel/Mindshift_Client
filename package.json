@@ -1,6 +1,6 @@
 {
   "name": "todomobileapp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start --no-dev --minify",
@@ -23,7 +23,7 @@
     "react-native-calendars": "^1.1293.0",
     "react-native-chart-kit": "^6.12.0",
     "react-native-dotenv": "^3.4.7",
-    "react-native-safe-area-context": "4.4.1",
+    "react-native-safe-area-context": "^4.4.1",
     "react-native-screens": "~3.18.0",
     "react-native-svg": "13.4.0",
     "react-native-vector-icons": "^9.2.0",

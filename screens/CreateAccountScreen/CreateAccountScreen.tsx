@@ -6,7 +6,10 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
 import CustomButton from "../components/Button"
@@ -47,10 +50,13 @@ function CreateAccountScreen() {
   }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View className="mt-6">
-        <View className="h-screen justify-center items-center">
-          <View className="w-full items-center gap-5 mt-36">
-            <View className="mb-6">
+      <SafeAreaView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+          className="justify-center items-center mt-36">
+          <View className="w-full items-center gap-5 mb-6">
+            <View className="mb-2">
               <Image
                 className="w-48"
                 resizeMode="contain"
@@ -95,7 +101,7 @@ function CreateAccountScreen() {
             </View>
           </View>
 
-          <View className="items-center mt-auto mb-20">
+          <View className="items-center mb-20">
             <Text>
               Already created an account?
               <Text
@@ -106,8 +112,8 @@ function CreateAccountScreen() {
               </Text>
             </Text>
           </View>
-        </View>
-      </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   )
 }

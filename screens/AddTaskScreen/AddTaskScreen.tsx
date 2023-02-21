@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { SafeAreaView } from "react-native-safe-area-context"
 import {
   View,
   Text,
@@ -7,6 +8,7 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
@@ -40,6 +42,8 @@ function AddTaskScreen({ route }: any) {
   const [taskHoursInput, setTaskHoursInput] = useState(0)
   const [taskMinutesInput, setTaskMinutesInput] = useState(0)
   const navigation = useNavigation<Nav>()
+  const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
+  const [isLoadingNewTask, setLoadingNewTask] = useState(false)
   const tasks: task[] | undefined = queryClient.getQueryData([
     "tasks",
     route.params.selectedDate,
@@ -90,7 +94,7 @@ function AddTaskScreen({ route }: any) {
               ? [
                   {
                     name: taskNameAux,
-                    id: "0",
+                    id: Math.round(Math.random() * 10000).toString(),
                     is_done: is_done_aux,
                     task_category_name: selected_category_aux,
                   },
@@ -99,7 +103,7 @@ function AddTaskScreen({ route }: any) {
                   ...prev,
                   {
                     name: taskNameAux,
-                    id: "0",
+                    id: Math.round(Math.random() * 10000).toString(),
                     is_done: is_done_aux,
                     task_category_name: selected_category_aux,
                   },
@@ -125,8 +129,11 @@ function AddTaskScreen({ route }: any) {
     selected_category_aux: string,
     task_time_aux: number
   ) {
-    if (taskNameAux.length < 2) return Alert.alert("Minimum size is 2 letters.")
-    console.log(tasks)
+    if (taskNameAux.length < 2) {
+      setLoadingNewTask(false)
+      return Alert.alert("Minimum size is 2 letters.")
+    }
+
     if (
       tasks != null &&
       Array.isArray(tasks) &&
@@ -134,8 +141,11 @@ function AddTaskScreen({ route }: any) {
       tasks
         .map((task: task) => task.name.toLowerCase())
         .includes(taskNameAux.toLowerCase())
-    )
+    ) {
+      setLoadingNewTask(false)
       return Alert.alert("Task already exists")
+    }
+
     try {
       await axios.post("/task/add", {
         user_id: userInfoState.id,
@@ -146,8 +156,10 @@ function AddTaskScreen({ route }: any) {
         task_time: task_time_aux,
       })
       //Alert.alert("Task added with success")
+      setLoadingNewTask(false)
       navigation.navigate("Home")
     } catch (err) {
+      setLoadingNewTask(false)
       console.log(err)
       Alert.alert("Error adding new task")
       throw new Error("oh noo")
@@ -156,9 +168,14 @@ function AddTaskScreen({ route }: any) {
 
   return (
     <>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="h-screen w-screen fixed">
-          <View className="mt-12 px-8 h-full pb-14">
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss()
+          setOpenDropDownMenu(false)
+        }}
+        accessible={false}>
+        <SafeAreaView>
+          <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">
                 <AntDesign
@@ -176,6 +193,7 @@ function AddTaskScreen({ route }: any) {
               <TextInput
                 className="text-base"
                 multiline={false}
+                onFocus={() => setOpenDropDownMenu(false)}
                 value={taskName}
                 onChangeText={(text) => setTaskName(text)}></TextInput>
             </View>
@@ -184,6 +202,8 @@ function AddTaskScreen({ route }: any) {
               setSelectedCategory={setSelectedCategory}
               queryClient={queryClient}
               categories={categories}
+              isOpenDropDownMenu={isOpenDropDownMenu}
+              setOpenDropDownMenu={setOpenDropDownMenu}
             />
             <Text className="font-semibold text-2xl mt-8 mb-4">Task time:</Text>
 
@@ -233,7 +253,11 @@ function AddTaskScreen({ route }: any) {
             <Text className="font-semibold text-2xl mt-8">Status:</Text>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => set_is_done_state(-1)}
+              onPress={() => {
+                set_is_done_state(-1)
+                setOpenDropDownMenu(false)
+                Keyboard.dismiss()
+              }}
               className="py-2 px-4 border-2 border-red-600 rounded-lg mt-6 bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">Not done</Text>
@@ -245,7 +269,11 @@ function AddTaskScreen({ route }: any) {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => set_is_done_state(0)}
+              onPress={() => {
+                set_is_done_state(0)
+                setOpenDropDownMenu(false)
+                Keyboard.dismiss()
+              }}
               className="py-2 px-4 border-2 border-orange-500 rounded-lg mt-4 bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">
@@ -259,7 +287,11 @@ function AddTaskScreen({ route }: any) {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => set_is_done_state(1)}
+              onPress={() => {
+                set_is_done_state(1)
+                setOpenDropDownMenu(false)
+                Keyboard.dismiss()
+              }}
               className="py-2 px-4 border-2 border-green-600 rounded-lg mt-4 bg-gray-50 flex-row items-center justify-between"
               style={{ elevation: 2 }}>
               <Text className="text-base font-medium">Completed</Text>
@@ -273,21 +305,27 @@ function AddTaskScreen({ route }: any) {
             <View className="mt-auto w-full flex-row-reverse">
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() =>
+                onPress={() => {
+                  if (isLoadingNewTask === true) return
+                  setLoadingNewTask(true)
                   mutateNewTask([
                     taskName,
                     is_done_state,
                     selectedCategory === "" ? "None" : selectedCategory,
                     taskHoursInput * 60 + taskMinutesInput,
                   ])
-                }
+                }}
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
                 style={{ elevation: 2 }}>
-                <Text className="text-white text-lg">Add Task</Text>
+                {isLoadingNewTask ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text className="text-white text-lg">Add Task</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </SafeAreaView>
       </TouchableWithoutFeedback>
     </>
   )

@@ -7,6 +7,7 @@ import {
   Keyboard,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import Octicons from "react-native-vector-icons/Octicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
@@ -140,76 +141,78 @@ function HomeScreen() {
         />
       ) : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="mt-6 h-screen">
-          <View className="mt-8 px-8">
-            <View className="flex-row w-full">
-              <Text className="text-2xl">
-                {selectedDate === getCustomDate(new Date())
-                  ? "Today"
-                  : selectedDate === getYesterday()
-                  ? "Yesterday"
-                  : getDatePrettyFormat(selectedDate)}
-              </Text>
-              <View className="h-fit ml-auto">
-                <View className="flex-row gap-6 items-center">
-                  <MaterialIcons
-                    name={"settings"}
-                    color={"black"}
-                    size={26}
-                    onPress={() => navigation.navigate("Settings")}
-                  />
-                  <Entypo
-                    name={"line-graph"}
-                    color={"black"}
-                    size={26}
-                    onPress={() => navigation.navigate("Performance")}
-                  />
-                  <FontAwesome
-                    name={"calendar"}
-                    color={"black"}
-                    size={26}
-                    onPress={() => setCalendarOpen(true)}
-                  />
+        <SafeAreaView>
+          <View className="h-screen">
+            <View className="mt-8 px-8">
+              <View className="flex-row w-full">
+                <Text className="text-2xl">
+                  {selectedDate === getCustomDate(new Date())
+                    ? "Today"
+                    : selectedDate === getYesterday()
+                    ? "Yesterday"
+                    : getDatePrettyFormat(selectedDate)}
+                </Text>
+                <View className="h-fit ml-auto">
+                  <View className="flex-row gap-6 items-center">
+                    <MaterialIcons
+                      name={"settings"}
+                      color={"black"}
+                      size={26}
+                      onPress={() => navigation.navigate("Settings")}
+                    />
+                    <Entypo
+                      name={"line-graph"}
+                      color={"black"}
+                      size={26}
+                      onPress={() => navigation.navigate("Performance")}
+                    />
+                    <FontAwesome
+                      name={"calendar"}
+                      color={"black"}
+                      size={26}
+                      onPress={() => setCalendarOpen(true)}
+                    />
 
-                  <Octicons
-                    onPress={() =>
-                      navigation.navigate("AddTask", {
-                        selectedDate: selectedDate,
-                      })
-                    }
-                    name={"plus"}
-                    color={"black"}
-                    size={26}
-                  />
+                    <Octicons
+                      onPress={() =>
+                        navigation.navigate("AddTask", {
+                          selectedDate: selectedDate,
+                        })
+                      }
+                      name={"plus"}
+                      color={"black"}
+                      size={26}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
-            <Text className="text-sm text-gray-500">
-              {tasks != null
-                ? `${tasks.filter((task: task) => task.is_done === 1).length}/${
-                    tasks.length
-                  }`
-                : "0/0"}
-            </Text>
-            <View className="mt-8">
-              <EditMenuContext.Provider value={setEditMenuOpen}>
-                {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
-                  tasks.map((task: task) => {
-                    return (
-                      <Task
-                        name={task.name}
-                        is_done={task.is_done}
-                        id={task.id}
-                        key={task.id}></Task>
-                    )
-                  })
-                ) : isLoadingTasks ? null : (
-                  <Text>No tasks added for this day</Text>
-                )}
-              </EditMenuContext.Provider>
+              <Text className="text-sm text-gray-500">
+                {tasks != null
+                  ? `${
+                      tasks.filter((task: task) => task.is_done === 1).length
+                    }/${tasks.length}`
+                  : "0/0"}
+              </Text>
+              <View className="mt-8">
+                <EditMenuContext.Provider value={setEditMenuOpen}>
+                  {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
+                    tasks.map((task: task) => {
+                      return (
+                        <Task
+                          name={task.name}
+                          is_done={task.is_done}
+                          id={task.id}
+                          key={task.id}></Task>
+                      )
+                    })
+                  ) : isLoadingTasks ? null : (
+                    <Text>No tasks added for this day</Text>
+                  )}
+                </EditMenuContext.Provider>
+              </View>
             </View>
           </View>
-        </View>
+        </SafeAreaView>
       </TouchableWithoutFeedback>
     </>
   )

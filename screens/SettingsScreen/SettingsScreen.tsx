@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import { useNavigation } from "@react-navigation/native"
 import useUserInfo from "../utils/useUserInfo"
@@ -19,8 +20,8 @@ function SettingsScreen() {
   return (
     <>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="h-screen w-screen fixed">
-          <View className="mt-12 px-8 h-full pb-14">
+        <SafeAreaView>
+          <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">
                 <AntDesign
@@ -47,7 +48,7 @@ function SettingsScreen() {
               <Text className="text-base font-medium">Log out</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </TouchableWithoutFeedback>
     </>
   )

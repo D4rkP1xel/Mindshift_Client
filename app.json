@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "ToDoMobileApp",
-    "slug": "ToDoMobileApp",
+    "name": "MindShift",
+    "slug": "MindShift",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/mindshift-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/mindshift-full-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
