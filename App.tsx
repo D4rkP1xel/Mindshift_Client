@@ -8,7 +8,9 @@ import PerformanceScreen from "./screens/PerformanceScreen/PerformanceScreen"
 import AddTaskScreen from "./screens/AddTaskScreen/AddTaskScreen"
 import SettingsScreen from "./screens/SettingsScreen/SettingsScreen"
 import { SafeAreaProvider } from "react-native-safe-area-context"
+
 const Stack = createNativeStackNavigator()
+
 const queryClient = new QueryClient()
 function App() {
   return (
@@ -16,7 +18,7 @@ function App() {
       <SafeAreaProvider>
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{}} />
             <Stack.Screen
               name="CreateAccount"
               component={CreateAccountScreen}

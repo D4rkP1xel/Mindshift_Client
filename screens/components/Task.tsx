@@ -15,17 +15,17 @@ function Task({ name, is_done, id }: props) {
     <View
       className={
         is_done === -1
-          ? "py-2 border-b border-red-600 mb-4"
+          ? "py-2 border-b-2 border-red-600 mb-4"
           : is_done === 0
-          ? "py-2 border-b border-yellow-500 mb-4"
-          : "py-2 border-b border-green-600 mb-4"
+          ? "py-2 border-b-2 border-yellow-500 mb-4"
+          : "py-2 border-b-2 border-green-600 mb-4"
       }>
       <Text
         onPress={() => {
           id !== "0" ? setEditMenuOpen(id) : null
           Keyboard.dismiss()
         }}
-        className="text-base">
+        className="text-lg font-normal">
         {name}
       </Text>
     </View>

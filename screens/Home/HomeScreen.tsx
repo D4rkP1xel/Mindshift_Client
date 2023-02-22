@@ -5,6 +5,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Keyboard,
+  ScrollView,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -23,6 +24,7 @@ import Task from "../components/Task"
 import EditTaskMenu from "../components/EditTaskMenu"
 import { Calendar } from "react-native-calendars"
 import { EditMenuContext } from "../utils/context"
+
 interface task {
   id: string
   name: string
@@ -33,6 +35,7 @@ interface task {
 }
 type Nav = {
   navigate: (value: string, params: object | void) => void
+  addListener: Function
 }
 
 function HomeScreen() {
@@ -41,6 +44,7 @@ function HomeScreen() {
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
+
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [isEditMenuOpen, setEditMenuOpen] = useState<string>("") //either stores an empty string or the id of the task
@@ -142,76 +146,77 @@ function HomeScreen() {
       ) : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <SafeAreaView>
-          <View className="h-screen">
-            <View className="mt-8 px-8">
-              <View className="flex-row w-full">
-                <Text className="text-2xl">
-                  {selectedDate === getCustomDate(new Date())
-                    ? "Today"
-                    : selectedDate === getYesterday()
-                    ? "Yesterday"
-                    : getDatePrettyFormat(selectedDate)}
-                </Text>
-                <View className="h-fit ml-auto">
-                  <View className="flex-row gap-6 items-center">
-                    <MaterialIcons
-                      name={"settings"}
-                      color={"black"}
-                      size={26}
-                      onPress={() => navigation.navigate("Settings")}
-                    />
-                    <Entypo
-                      name={"line-graph"}
-                      color={"black"}
-                      size={26}
-                      onPress={() => navigation.navigate("Performance")}
-                    />
-                    <FontAwesome
-                      name={"calendar"}
-                      color={"black"}
-                      size={26}
-                      onPress={() => setCalendarOpen(true)}
-                    />
+          <View className="pt-6 px-8 pb-6 ">
+            <View className="flex-row w-full">
+              <Text className="text-2xl">
+                {selectedDate === getCustomDate(new Date())
+                  ? "Today"
+                  : selectedDate === getYesterday()
+                  ? "Yesterday"
+                  : getDatePrettyFormat(selectedDate)}
+              </Text>
+              <View className="h-fit ml-auto">
+                <View className="flex-row gap-6 items-center">
+                  <MaterialIcons
+                    name={"settings"}
+                    color={"black"}
+                    size={26}
+                    onPress={() => navigation.navigate("Settings")}
+                  />
+                  <Entypo
+                    name={"line-graph"}
+                    color={"black"}
+                    size={26}
+                    onPress={() => navigation.navigate("Performance")}
+                  />
+                  <FontAwesome
+                    name={"calendar"}
+                    color={"black"}
+                    size={26}
+                    onPress={() => setCalendarOpen(true)}
+                  />
 
-                    <Octicons
-                      onPress={() =>
-                        navigation.navigate("AddTask", {
-                          selectedDate: selectedDate,
-                        })
-                      }
-                      name={"plus"}
-                      color={"black"}
-                      size={26}
-                    />
-                  </View>
+                  <Octicons
+                    onPress={() =>
+                      navigation.navigate("AddTask", {
+                        selectedDate: selectedDate,
+                      })
+                    }
+                    name={"plus"}
+                    color={"black"}
+                    size={26}
+                  />
                 </View>
               </View>
-              <Text className="text-sm text-gray-500">
-                {tasks != null
-                  ? `${
-                      tasks.filter((task: task) => task.is_done === 1).length
-                    }/${tasks.length}`
-                  : "0/0"}
-              </Text>
-              <View className="mt-8">
-                <EditMenuContext.Provider value={setEditMenuOpen}>
-                  {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
-                    tasks.map((task: task) => {
-                      return (
-                        <Task
-                          name={task.name}
-                          is_done={task.is_done}
-                          id={task.id}
-                          key={task.id}></Task>
-                      )
-                    })
-                  ) : isLoadingTasks ? null : (
-                    <Text>No tasks added for this day</Text>
-                  )}
-                </EditMenuContext.Provider>
-              </View>
             </View>
+            {/* <Text className="text-sm text-gray-500">
+              {tasks != null
+                ? `${tasks.filter((task: task) => task.is_done === 1).length}/${
+                    tasks.length
+                  }`
+                : "0/0"}
+            </Text> */}
           </View>
+
+          <ScrollView>
+            <View className="mt-4 mb-24 px-8">
+              <EditMenuContext.Provider value={setEditMenuOpen}>
+                {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
+                  tasks.map((task: task) => {
+                    return (
+                      <Task
+                        name={task.name}
+                        is_done={task.is_done}
+                        id={task.id}
+                        key={task.id}></Task>
+                    )
+                  })
+                ) : isLoadingTasks ? null : (
+                  <Text>No tasks added for this day</Text>
+                )}
+              </EditMenuContext.Provider>
+            </View>
+          </ScrollView>
         </SafeAreaView>
       </TouchableWithoutFeedback>
     </>

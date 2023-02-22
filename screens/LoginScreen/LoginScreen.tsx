@@ -73,6 +73,7 @@ function LoginScreen() {
       <SafeAreaView>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 40}
           className="justify-center items-center mt-44">
           <View className="w-full items-center gap-5 mb-6">
             <View className="mb-2">
@@ -103,9 +104,10 @@ function LoginScreen() {
             </View>
             <View className="items-center w-full pt-5">
               <CustomButton
-                onPressFunc={async () =>
+                onPressFunc={async () => {
+                  Keyboard.dismiss()
                   await signIn(emailInput, passwordInput)
-                }
+                }}
                 name="Sign In"
               />
             </View>

@@ -7,10 +7,12 @@ import {
   Alert,
   Keyboard,
   ActivityIndicator,
+  TouchableWithoutFeedback,
 } from "react-native"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useState } from "react"
-import Ionicons from "react-native-vector-icons/AntDesign"
+import AntDesign from "react-native-vector-icons/AntDesign"
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5"
 import { useMutation } from "react-query"
 import useUserInfo from "../utils/useUserInfo"
 import axios from "../utils/axiosConfig"
@@ -110,6 +112,54 @@ function SelectedList({
       Alert.alert("Server Error: cannot add category.")
     }
   }
+
+  const { mutate: mutateRemoveCategory } = useMutation(
+    async (category_name: string) => await removeCategory(category_name),
+    {
+      onMutate: (category_name: string) => {
+        if (
+          categories == null ||
+          !categories
+            .map((category: category) => category.name.toLowerCase())
+            .includes(category_name.toLowerCase())
+        )
+          return
+        queryClient.cancelQueries({ queryKey: ["categories"] })
+        queryClient.setQueryData(
+          ["categories"],
+          (prev: category[] | undefined | void) => {
+            if (prev == null) return prev
+            return [
+              ...categories.filter(
+                (category) =>
+                  category.name.toLowerCase() !== category_name.toLowerCase()
+              ),
+            ]
+          }
+        )
+      },
+    }
+  )
+
+  async function removeCategory(category_name: string) {
+    if (
+      categories == null ||
+      !categories
+        .map((category: category) => category.name.toLowerCase())
+        .includes(category_name.toLowerCase())
+    )
+      return
+
+    try {
+      await axios.post("/category/remove", {
+        user_id: userInfoState.id,
+        category_name: category_name,
+      })
+    } catch (err) {
+      console.log(err)
+      Alert.alert("Server Error: cannot remove category.")
+    }
+  }
   return (
     <>
       <View className="h-32">
@@ -164,11 +214,45 @@ function SelectedList({
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={() => handlePress(value.name)}
-                          className="py-2 px-4 border-b border-gray-300"
+                          className="py-2 px-4 border-b border-gray-300 flex-row justify-between items-center"
                           key={value.id}>
                           <Text className="text-base font-medium">
                             {value.name}
                           </Text>
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            className="pl-12 py-1"
+                            onPress={() =>
+                              Alert.alert(
+                                "Delete Category",
+                                "Are you sure you want to delete '" +
+                                  value.name +
+                                  "' ?",
+                                [
+                                  {
+                                    text: "Cancel",
+                                    style: "cancel",
+                                  },
+                                  {
+                                    text: "Confirm",
+
+                                    style: "default",
+                                    onPress: async () => {
+                                      mutateRemoveCategory(value.name)
+                                    },
+                                  },
+                                ],
+                                {
+                                  cancelable: true,
+                                }
+                              )
+                            }>
+                            <FontAwesome5
+                              name={"trash"}
+                              color={"#00000030"}
+                              size={16}
+                            />
+                          </TouchableOpacity>
                         </TouchableOpacity>
                       ))
                     : null}
@@ -211,7 +295,7 @@ function SelectedList({
                 {isLoadingNewCategory ? (
                   <ActivityIndicator />
                 ) : (
-                  <Ionicons
+                  <AntDesign
                     onPress={() => {
                       if (isLoadingNewCategory) return
                       setLoadingNewCategory(true)

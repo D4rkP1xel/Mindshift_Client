@@ -6,7 +6,8 @@
     "start": "expo start --no-dev --minify",
     "dev": "expo start",
     "android": "expo start --android",
-    "ios": "expo start --ios"
+    "ios": "expo start --ios",
+    "version": "npx react-native-version --never-amend"
   },
   "dependencies": {
     "@expo/webpack-config": "^0.17.2",
