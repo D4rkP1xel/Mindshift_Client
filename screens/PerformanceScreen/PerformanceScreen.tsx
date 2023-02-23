@@ -9,7 +9,7 @@ import { useState } from "react"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useNavigation } from "@react-navigation/native"
-import useUserInfo from "../utils/useUserInfo"
+import { useUserInfo } from "../utils/zustandStateManager"
 import Octicons from "react-native-vector-icons/Octicons"
 import { LineChart } from "react-native-chart-kit"
 import axios from "../utils/axiosConfig"
@@ -29,13 +29,12 @@ function PerformanceScreen() {
   const [isOpenPerformanceMenu, setOpenPerformanceMenu] =
     useState<boolean>(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("All")
   const { data: categories } = useQuery(["categories"], async () => {
     return axios
       .post("/category/get", { user_id: userInfoState.id })
       .then((res) => {
         //console.log(res.data.categories)
-        setSelectedCategory(res.data.categories[0].name)
         return res.data.categories
       })
       .catch((err) => {
@@ -44,6 +43,7 @@ function PerformanceScreen() {
   })
 
   const { data: performanceStats } = useQuery(
+    // data for the stats below the graph
     ["performance_stats", selectedCategory],
     async () => {
       return axios
@@ -61,6 +61,7 @@ function PerformanceScreen() {
     { enabled: selectedCategory != null && selectedCategory !== "" }
   )
   const { data: performance } = useQuery(
+    // data for the graphs
     ["performance", [selectedCategory, performanceType]],
     async () => {
       return axios
@@ -382,28 +383,37 @@ function PerformanceScreen() {
               />
             </TouchableOpacity>
           </View>
-          {isOpenDropDownMenu ? (
+          {isOpenDropDownMenu ? ( //CATEGORIES DROP DOWN MENU
             <View className="absolute top-[58px] w-full">
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 className="z-50 max-h-[170px] mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
                 {categories != null && categories.length > 0
-                  ? categories.map((value: category) => (
+                  ? [
                       <TouchableOpacity
                         activeOpacity={0.7}
-                        onPress={() => handlePress(value.name)}
+                        onPress={() => handlePress("All")}
                         className="py-2 px-4 border-b border-gray-300"
-                        key={value.id}>
-                        <Text className="text-base font-medium">
-                          {value.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
+                        key={Math.round(Math.random() * 10000).toString()}>
+                        <Text className="text-base font-medium">All</Text>
+                      </TouchableOpacity>,
+                      ...categories.map((value: category) => (
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => handlePress(value.name)}
+                          className="py-2 px-4 border-b border-gray-300"
+                          key={value.id}>
+                          <Text className="text-base font-medium">
+                            {value.name}
+                          </Text>
+                        </TouchableOpacity>
+                      )),
+                    ]
                   : null}
               </ScrollView>
             </View>
           ) : null}
-          {isOpenPerformanceMenu ? (
+          {isOpenPerformanceMenu ? ( //PERFORMANCE TYPE (daily, weekly, monthly) DROP DOWN MENU
             <View className="absolute top-[58px] w-full">
               <ScrollView
                 showsVerticalScrollIndicator={false}

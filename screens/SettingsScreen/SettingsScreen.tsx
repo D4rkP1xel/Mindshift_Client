@@ -7,8 +7,9 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import AntDesign from "react-native-vector-icons/AntDesign"
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useNavigation } from "@react-navigation/native"
-import useUserInfo from "../utils/useUserInfo"
+import { useUserInfo, useAppStyle } from "../utils/zustandStateManager"
 
 type Nav = {
   navigate: (value: string) => void
@@ -17,6 +18,8 @@ type Nav = {
 function SettingsScreen() {
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
+  const getAppStyle = useAppStyle((state) => state.appStyle)
+  const setAppStyle = useAppStyle((state) => state.setAppStyle)
   return (
     <>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -31,6 +34,24 @@ function SettingsScreen() {
                   onPress={() => navigation.navigate("Home")}
                 />
               </View>
+            </View>
+            <View className="flex-row justify-between items-center mt-12">
+              <Text className="text-xl font-medium">Dark Mode</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() =>
+                  setAppStyle({ darkMode: !getAppStyle.darkMode })
+                }>
+                {getAppStyle.darkMode === true ? (
+                  <MaterialIcons name={"check-box"} color={"black"} size={32} />
+                ) : (
+                  <MaterialIcons
+                    name={"check-box-outline-blank"}
+                    color={"black"}
+                    size={32}
+                  />
+                )}
+              </TouchableOpacity>
             </View>
             <TouchableOpacity
               activeOpacity={0.7}

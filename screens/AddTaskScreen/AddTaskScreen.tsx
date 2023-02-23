@@ -15,7 +15,7 @@ import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 
 import axios from "../utils/axiosConfig"
-import useUserInfo from "../utils/useUserInfo"
+import { useUserInfo } from "../utils/zustandStateManager"
 import SelectedList from "../components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
 
@@ -34,6 +34,7 @@ type Nav = {
 }
 
 function AddTaskScreen({ route }: any) {
+  const categoriesBlackList = ["none", "all"]
   const [taskName, setTaskName] = useState("")
   const [is_done_state, set_is_done_state] = useState(-1)
   const queryClient = useQueryClient()
@@ -75,6 +76,9 @@ function AddTaskScreen({ route }: any) {
         let selected_category_aux = params[2]
 
         if (taskNameAux.length < 2) return
+        if (categoriesBlackList.includes(taskNameAux.toLowerCase().trim())) {
+          return
+        }
         if (
           tasks != null &&
           Array.isArray(tasks) &&
@@ -133,7 +137,10 @@ function AddTaskScreen({ route }: any) {
       setLoadingNewTask(false)
       return Alert.alert("Minimum size is 2 letters.")
     }
-
+    if (categoriesBlackList.includes(taskNameAux.toLowerCase().trim())) {
+      setLoadingNewTask(false)
+      return Alert.alert("ERROR: Reserved Category Name")
+    }
     if (
       tasks != null &&
       Array.isArray(tasks) &&

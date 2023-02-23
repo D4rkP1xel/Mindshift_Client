@@ -15,7 +15,7 @@ import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 
 import axios from "../utils/axiosConfig"
-import useUserInfo from "../utils/useUserInfo"
+import { useUserInfo } from "../utils/zustandStateManager"
 import SelectedList from "./SelectedList"
 
 interface props {

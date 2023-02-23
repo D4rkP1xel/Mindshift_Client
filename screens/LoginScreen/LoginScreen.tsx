@@ -15,7 +15,7 @@ import {
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 import axios from "../utils/axiosConfig"
-import useUserInfo from "../utils/useUserInfo"
+import { useUserInfo } from "../utils/zustandStateManager"
 import { SafeAreaView } from "react-native-safe-area-context"
 type Nav = {
   navigate: (value: string) => void

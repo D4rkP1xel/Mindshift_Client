@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import Octicons from "react-native-vector-icons/Octicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
-import useUserInfo from "../utils/useUserInfo"
+import { useUserInfo } from "../utils/zustandStateManager"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import axios from "../utils/axiosConfig"
 import getCustomDate, {
