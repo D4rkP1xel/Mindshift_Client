@@ -57,10 +57,11 @@ const useUserInfo = create<userInfoState>((set) => ({
 
 const useAppStyle = create<appStyleState>((set) => ({
   appStyle:
-    getData("app_style") != null
+    //@ts-ignore
+    getData("app_style") != null && getData("app_style").darkMode !== undefined
       ? //@ts-ignore
         getData("app_style")
-      : { darkMode: false },
+      : { darkMode: true },
   setAppStyle: (newAppStyle: appStyleType) =>
     set(() => {
       storeData("app_style", newAppStyle)

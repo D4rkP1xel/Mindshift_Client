@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Text, TouchableOpacity, ActivityIndicator } from "react-native"
+import useAppStyling from "../utils/useAppStyling"
 
 type props = {
   name: string
@@ -8,6 +9,8 @@ type props = {
 
 function Button({ name, onPressFunc }: props) {
   const [isLoading, setLoading] = useState(false)
+  const { mainColor, buttonColor, buttonRoundness, borderColor } =
+    useAppStyling()
   return (
     <TouchableOpacity
       activeOpacity={0.7}
@@ -17,11 +20,11 @@ function Button({ name, onPressFunc }: props) {
         await onPressFunc()
         setLoading(false)
       }}
-      className="w-6/12 rounded-full h-12 bg-black justify-center items-center mb-3">
+      className={`w-6/12 ${buttonRoundness} h-12 ${buttonColor} border-2 ${borderColor} justify-center items-center mb-3`}>
       {isLoading ? (
         <ActivityIndicator />
       ) : (
-        <Text className="text-white text-base">{name}</Text>
+        <Text className={`${mainColor} text-base`}>{name}</Text>
       )}
     </TouchableOpacity>
   )

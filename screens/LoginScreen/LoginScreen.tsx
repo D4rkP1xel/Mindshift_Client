@@ -10,13 +10,13 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
 } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 import axios from "../utils/axiosConfig"
 import { useUserInfo } from "../utils/zustandStateManager"
 import { SafeAreaView } from "react-native-safe-area-context"
+import useAppStyling from "../utils/useAppStyling"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -35,7 +35,14 @@ function LoginScreen() {
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
   const userInfoState = useUserInfo((state) => state.userInfo)
-
+  const {
+    fullLogoPath,
+    mainColor,
+    mainColorHash,
+    bgColor,
+    buttonRoundness,
+    textInputBorderColor,
+  } = useAppStyling()
   useEffect(() => {
     if (userInfoState.id !== undefined && userInfoState.id !== null) {
       navigation.navigate("Home")
@@ -70,7 +77,7 @@ function LoginScreen() {
   }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView>
+      <SafeAreaView className={`${bgColor} h-screen`}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 40}
@@ -80,23 +87,27 @@ function LoginScreen() {
               <Image
                 className="w-48"
                 resizeMode="contain"
-                source={require("../../assets/mindshift-full-logo.png")}
+                source={fullLogoPath}
               />
             </View>
-            <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
-              <FontAwesome name={"user-alt"} color={"black"} size={20} />
+            <View
+              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              <FontAwesome name={"user-alt"} color={mainColorHash} size={20} />
               <TextInput
-                className="px-2 w-full"
+                className={`px-2 w-full ${mainColor}`}
+                placeholderTextColor={mainColorHash}
                 value={emailInput}
                 placeholder="Username/Email"
                 onChangeText={(text) => setEmailInput(text)}
               />
             </View>
-            <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
-              <FontAwesome name={"lock"} color={"black"} size={20} />
+            <View
+              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              <FontAwesome name={"lock"} color={mainColorHash} size={20} />
               <TextInput
-                className="px-2 w-full"
+                className={`px-2 w-full ${mainColor}`}
                 secureTextEntry={true}
+                placeholderTextColor={mainColorHash}
                 value={passwordInput}
                 placeholder="Password"
                 onChangeText={(text) => setPasswordInput(text)}
@@ -113,8 +124,8 @@ function LoginScreen() {
             </View>
           </View>
 
-          <View className="items-center mb-20">
-            <Text>
+          <View className={`items-center mb-20`}>
+            <Text className={`${mainColor}`}>
               Don't have an account?
               <Text
                 className="text-blue-500"

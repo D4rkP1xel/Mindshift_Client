@@ -16,6 +16,7 @@ import CustomButton from "../components/Button"
 import { useState } from "react"
 import axios from "../utils/axiosConfig"
 import { useNavigation } from "@react-navigation/native"
+import useAppStyling from "../utils/useAppStyling"
 
 type Nav = {
   navigate: (value: string) => void
@@ -26,6 +27,14 @@ function CreateAccountScreen() {
   let [usernameInput, setUsernameInput] = useState("") //cant have @
   let [passwordInput, setPasswordInput] = useState("")
   const navigation = useNavigation<Nav>()
+  const {
+    fullLogoPath,
+    mainColor,
+    mainColorHash,
+    bgColor,
+    buttonRoundness,
+    textInputBorderColor,
+  } = useAppStyling()
   async function createAccount(
     emailInputParam: string,
     usernameInputParam: string,
@@ -50,7 +59,7 @@ function CreateAccountScreen() {
   }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView>
+      <SafeAreaView className={`${bgColor} h-screen`}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 40}
@@ -60,34 +69,40 @@ function CreateAccountScreen() {
               <Image
                 className="w-48"
                 resizeMode="contain"
-                source={require("../../assets/mindshift-full-logo.png")}
+                source={fullLogoPath}
               />
             </View>
-            <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
-              <Entypo name={"mail"} color={"black"} size={20} />
+            <View
+              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              <Entypo name={"mail"} color={mainColorHash} size={20} />
               <TextInput
-                className="px-2 w-full"
+                className={`px-2 w-full ${mainColor}`}
                 value={emailInput}
+                placeholderTextColor={mainColorHash}
                 placeholder="Email"
                 onChangeText={(text) => setEmailInput(text)}
               />
             </View>
-            <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
-              <FontAwesome name={"user-alt"} color={"black"} size={20} />
+            <View
+              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              <FontAwesome name={"user-alt"} color={mainColorHash} size={20} />
               <TextInput
-                className="px-2 w-full"
+                className={`px-2 w-full ${mainColor}`}
                 value={usernameInput}
+                placeholderTextColor={mainColorHash}
                 placeholder="Username"
                 onChangeText={(text) => setUsernameInput(text)}
               />
             </View>
-            <View className="h-10 px-3 border border-black w-9/12 rounded-xl items-center flex flex-row">
-              <FontAwesome name={"lock"} color={"black"} size={20} />
+            <View
+              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              <FontAwesome name={"lock"} color={mainColorHash} size={20} />
               <TextInput
-                className="px-2 w-full"
+                className={`px-2 w-full ${mainColor}`}
                 secureTextEntry={true}
                 value={passwordInput}
                 placeholder="Password"
+                placeholderTextColor={mainColorHash}
                 onChangeText={(text) => setPasswordInput(text)}
               />
             </View>
@@ -103,7 +118,7 @@ function CreateAccountScreen() {
           </View>
 
           <View className="items-center mb-20">
-            <Text>
+            <Text className={`${mainColor}`}>
               Already created an account?
               <Text
                 className="text-blue-500"
