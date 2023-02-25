@@ -18,6 +18,7 @@ import axios from "../utils/axiosConfig"
 import { useUserInfo } from "../utils/zustandStateManager"
 import SelectedList from "../components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
+import useAppStyling from "../utils/useAppStyling"
 
 interface task {
   id: string
@@ -35,6 +36,15 @@ type Nav = {
 
 function AddTaskScreen({ route }: any) {
   const categoriesBlackList = ["none", "all"]
+  const {
+    mainColor,
+    mainColorHash,
+    bgColor,
+    buttonRoundness,
+    buttonColor,
+    secondaryBorderColor,
+    borderColor,
+  } = useAppStyling()
   const [taskName, setTaskName] = useState("")
   const [is_done_state, set_is_done_state] = useState(-1)
   const queryClient = useQueryClient()
@@ -181,24 +191,24 @@ function AddTaskScreen({ route }: any) {
           setOpenDropDownMenu(false)
         }}
         accessible={false}>
-        <SafeAreaView>
+        <SafeAreaView className={`${bgColor}`}>
           <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">
                 <AntDesign
                   name={"close"}
-                  color={"black"}
+                  color={mainColorHash}
                   size={32}
                   onPress={() => navigation.navigate("Home")}
                 />
               </View>
             </View>
 
-            <Text className="font-semibold text-2xl">Task:</Text>
+            <Text className={`font-semibold text-2xl ${mainColor}`}>Task:</Text>
 
-            <View className="border-b w-10/12 mt-4">
+            <View className={`border-b ${secondaryBorderColor} w-10/12 mt-4`}>
               <TextInput
-                className="text-base"
+                className={`text-base ${mainColor}`}
                 multiline={false}
                 onFocus={() => setOpenDropDownMenu(false)}
                 value={taskName}
@@ -212,14 +222,17 @@ function AddTaskScreen({ route }: any) {
               isOpenDropDownMenu={isOpenDropDownMenu}
               setOpenDropDownMenu={setOpenDropDownMenu}
             />
-            <Text className="font-semibold text-2xl mt-8 mb-4">Task time:</Text>
+            <Text className={`font-semibold text-2xl mt-8 mb-4 ${mainColor}`}>
+              Task time:
+            </Text>
 
             <View className="flex-row items-center">
               <View className="flex-row items-center gap-2">
-                <View className="border-2 border-black rounded-md w-10 bg-white">
+                <View
+                  className={`${borderColor} ${buttonRoundness} w-10 ${buttonColor}`}>
                   <TextInput
                     keyboardType="number-pad"
-                    className="text-lg w-full"
+                    className={`text-lg w-full ${mainColor} pl-2`}
                     multiline={false}
                     value={taskHoursInput.toString()}
                     onChangeText={(text) => {
@@ -233,13 +246,14 @@ function AddTaskScreen({ route }: any) {
                       else setTaskHoursInput(parseInt(text))
                     }}></TextInput>
                 </View>
-                <Text className="text-lg mr-12">hours</Text>
+                <Text className={`text-lg mr-12 ${mainColor}`}>hours</Text>
               </View>
               <View className="flex-row items-center gap-2">
-                <View className="border-2 border-black rounded-md w-10 bg-white">
+                <View
+                  className={`${borderColor} ${buttonRoundness} w-10 ${buttonColor}`}>
                   <TextInput
                     keyboardType="numeric"
-                    className="text-lg w-full"
+                    className={`text-lg w-full ${mainColor} pl-2`}
                     multiline={false}
                     value={taskMinutesInput.toString()}
                     onChangeText={(text) => {
@@ -253,11 +267,13 @@ function AddTaskScreen({ route }: any) {
                       else setTaskMinutesInput(parseInt(text))
                     }}></TextInput>
                 </View>
-                <Text className="text-lg">minutes</Text>
+                <Text className={`text-lg ${mainColor}`}>minutes</Text>
               </View>
             </View>
 
-            <Text className="font-semibold text-2xl mt-8">Status:</Text>
+            <Text className={`font-semibold text-2xl mt-8 ${mainColor}`}>
+              Status:
+            </Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
@@ -265,13 +281,23 @@ function AddTaskScreen({ route }: any) {
                 setOpenDropDownMenu(false)
                 Keyboard.dismiss()
               }}
-              className="py-2 px-4 border-2 border-red-600 rounded-lg mt-6 bg-gray-50 flex-row items-center justify-between"
+              className={`py-2 px-4 border-2 border-red-600 ${buttonRoundness} mt-6 ${buttonColor} flex-row items-center justify-between`}
               style={{ elevation: 2 }}>
-              <Text className="text-base font-medium">Not done</Text>
+              <Text className={`text-base font-medium ${mainColor}`}>
+                Not done
+              </Text>
               {is_done_state === -1 ? (
-                <Fontisto name="radio-btn-active" color={"black"} size={20} />
+                <Fontisto
+                  name="radio-btn-active"
+                  color={mainColorHash}
+                  size={20}
+                />
               ) : (
-                <Fontisto name="radio-btn-passive" color={"black"} size={20} />
+                <Fontisto
+                  name="radio-btn-passive"
+                  color={mainColorHash}
+                  size={20}
+                />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -281,15 +307,23 @@ function AddTaskScreen({ route }: any) {
                 setOpenDropDownMenu(false)
                 Keyboard.dismiss()
               }}
-              className="py-2 px-4 border-2 border-orange-500 rounded-lg mt-4 bg-gray-50 flex-row items-center justify-between"
+              className={`py-2 px-4 border-2 border-orange-500 ${buttonRoundness} mt-4 ${buttonColor} flex-row items-center justify-between`}
               style={{ elevation: 2 }}>
-              <Text className="text-base font-medium">
+              <Text className={`text-base font-medium ${mainColor}`}>
                 Currently doing / halfway done
               </Text>
               {is_done_state === 0 ? (
-                <Fontisto name="radio-btn-active" color={"black"} size={20} />
+                <Fontisto
+                  name="radio-btn-active"
+                  color={mainColorHash}
+                  size={20}
+                />
               ) : (
-                <Fontisto name="radio-btn-passive" color={"black"} size={20} />
+                <Fontisto
+                  name="radio-btn-passive"
+                  color={mainColorHash}
+                  size={20}
+                />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -299,13 +333,23 @@ function AddTaskScreen({ route }: any) {
                 setOpenDropDownMenu(false)
                 Keyboard.dismiss()
               }}
-              className="py-2 px-4 border-2 border-green-600 rounded-lg mt-4 bg-gray-50 flex-row items-center justify-between"
+              className={`py-2 px-4 border-2 border-green-600 ${buttonRoundness} mt-4 ${buttonColor} flex-row items-center justify-between`}
               style={{ elevation: 2 }}>
-              <Text className="text-base font-medium">Completed</Text>
+              <Text className={`text-base font-medium ${mainColor}`}>
+                Completed
+              </Text>
               {is_done_state === 1 ? (
-                <Fontisto name="radio-btn-active" color={"black"} size={20} />
+                <Fontisto
+                  name="radio-btn-active"
+                  color={mainColorHash}
+                  size={20}
+                />
               ) : (
-                <Fontisto name="radio-btn-passive" color={"black"} size={20} />
+                <Fontisto
+                  name="radio-btn-passive"
+                  color={mainColorHash}
+                  size={20}
+                />
               )}
             </TouchableOpacity>
 

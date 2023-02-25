@@ -41,7 +41,7 @@ function LoginScreen() {
     mainColorHash,
     bgColor,
     buttonRoundness,
-    textInputBorderColor,
+    secondaryBorderColor,
   } = useAppStyling()
   useEffect(() => {
     if (userInfoState.id !== undefined && userInfoState.id !== null) {
@@ -91,7 +91,7 @@ function LoginScreen() {
               />
             </View>
             <View
-              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              className={`h-10 px-3 border ${secondaryBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
               <FontAwesome name={"user-alt"} color={mainColorHash} size={20} />
               <TextInput
                 className={`px-2 w-full ${mainColor}`}
@@ -102,7 +102,7 @@ function LoginScreen() {
               />
             </View>
             <View
-              className={`h-10 px-3 border ${textInputBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
+              className={`h-10 px-3 border ${secondaryBorderColor} w-9/12 ${buttonRoundness} items-center flex flex-row`}>
               <FontAwesome name={"lock"} color={mainColorHash} size={20} />
               <TextInput
                 className={`px-2 w-full ${mainColor}`}

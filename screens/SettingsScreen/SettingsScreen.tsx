@@ -78,7 +78,7 @@ function SettingsScreen() {
                 })
                 navigation.navigate("Login")
               }}
-              className={`py-2 px-4 border-2 ${borderColor} ${buttonColor} ${buttonRoundness} mt-16 flex-row justify-center`}
+              className={`py-2 px-4 ${borderColor} ${buttonColor} ${buttonRoundness} mt-16 flex-row justify-center`}
               style={{ elevation: 2 }}>
               <Text className={`text-base font-medium ${mainColor}`}>
                 Log out

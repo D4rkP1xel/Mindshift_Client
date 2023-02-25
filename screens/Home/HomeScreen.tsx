@@ -24,6 +24,7 @@ import Task from "../components/Task"
 import EditTaskMenu from "../components/EditTaskMenu"
 import { Calendar } from "react-native-calendars"
 import { EditMenuContext } from "../utils/context"
+import useAppStyling from "../utils/useAppStyling"
 
 interface task {
   id: string
@@ -48,6 +49,14 @@ function HomeScreen() {
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [isEditMenuOpen, setEditMenuOpen] = useState<string>("") //either stores an empty string or the id of the task
+  const {
+    mainColor,
+    mainColorHash,
+    bgColor,
+    calendarBg,
+    calendarDisabledDays,
+    calendarEnabledDays,
+  } = useAppStyling()
   const { data: calendarPerformance, refetch: refetchCalendarPerformance } =
     useQuery(["calendar_performance"], async () => {
       return axios
@@ -100,6 +109,12 @@ function HomeScreen() {
             <View className="mt-32">
               <Calendar
                 disableAllTouchEventsForDisabledDays={true}
+                theme={{
+                  calendarBackground: calendarBg,
+                  monthTextColor: mainColorHash,
+                  textDisabledColor: calendarDisabledDays,
+                  dayTextColor: calendarEnabledDays,
+                }}
                 minDate={getCustomDate(new Date(userInfoState.creation_date))}
                 initialDate={selectedDate}
                 maxDate={getCustomDate(new Date())}
@@ -145,10 +160,10 @@ function HomeScreen() {
         />
       ) : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <SafeAreaView>
+        <SafeAreaView className={`${bgColor} h-screen`}>
           <View className="pt-6 px-8 pb-6 ">
             <View className="flex-row w-full">
-              <Text className="text-2xl">
+              <Text className={`text-2xl ${mainColor}`}>
                 {selectedDate === getCustomDate(new Date())
                   ? "Today"
                   : selectedDate === getYesterday()
@@ -159,19 +174,19 @@ function HomeScreen() {
                 <View className="flex-row gap-6 items-center">
                   <MaterialIcons
                     name={"settings"}
-                    color={"black"}
+                    color={mainColorHash}
                     size={26}
                     onPress={() => navigation.navigate("Settings")}
                   />
                   <Entypo
                     name={"line-graph"}
-                    color={"black"}
+                    color={mainColorHash}
                     size={26}
                     onPress={() => navigation.navigate("Performance")}
                   />
                   <FontAwesome
                     name={"calendar"}
-                    color={"black"}
+                    color={mainColorHash}
                     size={26}
                     onPress={() => setCalendarOpen(true)}
                   />
@@ -183,7 +198,7 @@ function HomeScreen() {
                       })
                     }
                     name={"plus"}
-                    color={"black"}
+                    color={mainColorHash}
                     size={26}
                   />
                 </View>
@@ -212,7 +227,9 @@ function HomeScreen() {
                     )
                   })
                 ) : isLoadingTasks ? null : (
-                  <Text>No tasks added for this day</Text>
+                  <Text className={`${mainColor}`}>
+                    No tasks added for this day
+                  </Text>
                 )}
               </EditMenuContext.Provider>
             </View>

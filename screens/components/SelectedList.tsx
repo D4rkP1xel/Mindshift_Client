@@ -7,7 +7,6 @@ import {
   Alert,
   Keyboard,
   ActivityIndicator,
-  TouchableWithoutFeedback,
 } from "react-native"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useState } from "react"
@@ -16,6 +15,7 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5"
 import { useMutation } from "react-query"
 import { useUserInfo } from "../utils/zustandStateManager"
 import axios from "../utils/axiosConfig"
+import useAppStyling from "../utils/useAppStyling"
 interface props {
   selectedCategory: string
   setSelectedCategory: Function
@@ -40,7 +40,15 @@ function SelectedList({
   const [categoryInput, setCategoryInput] = useState<string>("")
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [isLoadingNewCategory, setLoadingNewCategory] = useState(false)
-
+  const {
+    mainColor,
+    mainColorHash,
+    buttonRoundness,
+    buttonColor,
+    borderColor,
+    secondaryBorderColor,
+    dropDownMenuBorderColor,
+  } = useAppStyling()
   function handlePress(value: string) {
     setSelectedCategory(value)
     setOpenDropDownMenu(false)
@@ -165,7 +173,9 @@ function SelectedList({
       <View className="h-32">
         {!isAddCategory ? (
           <>
-            <Text className="font-semibold text-2xl mt-8 mb-4">Category:</Text>
+            <Text className={`font-semibold text-2xl mt-8 mb-4 ${mainColor}`}>
+              Category:
+            </Text>
             <View className="flex-row gap-2 w-full items-center justify-between">
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -173,14 +183,14 @@ function SelectedList({
                   setOpenDropDownMenu(!isOpenDropDownMenu)
                   Keyboard.dismiss()
                 }}
-                className="w-8/12 rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
+                className={`w-8/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
                 style={{ elevation: 2 }}>
-                <Text className="text-base font-medium">
+                <Text className={`text-base font-medium ${mainColor}`}>
                   {selectedCategory === "" ? "None" : selectedCategory}
                 </Text>
                 <MaterialIcons
                   name="keyboard-arrow-down"
-                  color={"black"}
+                  color={mainColorHash}
                   size={20}
                 />
               </TouchableOpacity>
@@ -202,21 +212,24 @@ function SelectedList({
               <View>
                 <ScrollView
                   showsVerticalScrollIndicator={false}
-                  className="z-50 max-h-36 mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
+                  className={`z-50 max-h-36 mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => handlePress("None")}
-                    className="py-2 px-4 border-b border-gray-300">
-                    <Text className="text-base font-medium">None</Text>
+                    className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                    <Text className={`text-base font-medium ${mainColor}`}>
+                      None
+                    </Text>
                   </TouchableOpacity>
                   {categories != null && categories.length > 0
                     ? categories.map((value: category) => (
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={() => handlePress(value.name)}
-                          className="py-2 px-4 border-b border-gray-300 flex-row justify-between items-center"
+                          className={`py-2 px-4 border-b ${dropDownMenuBorderColor} flex-row justify-between items-center`}
                           key={value.id}>
-                          <Text className="text-base font-medium">
+                          <Text
+                            className={`text-base font-medium ${mainColor}`}>
                             {value.name}
                           </Text>
                           <TouchableOpacity
@@ -249,7 +262,7 @@ function SelectedList({
                             }>
                             <FontAwesome5
                               name={"trash"}
-                              color={"#00000030"}
+                              color={"#fafafa50"}
                               size={16}
                             />
                           </TouchableOpacity>
@@ -264,7 +277,9 @@ function SelectedList({
           //ADD CATEGORY
           <>
             <View className="flex-row items-center justify-between mt-8 mb-4">
-              <Text className="font-semibold text-2xl ">Category:</Text>
+              <Text className={`font-semibold text-2xl ${mainColor}`}>
+                Category:
+              </Text>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
@@ -285,8 +300,9 @@ function SelectedList({
               </TouchableOpacity>
             </View>
             <View className="mt-2 flex-row w-full">
-              <View className="border-b w-10/12">
+              <View className={`border-b ${secondaryBorderColor} w-10/12`}>
                 <TextInput
+                  className={`${mainColor}`}
                   multiline={false}
                   value={categoryInput}
                   onChangeText={(text) => setCategoryInput(text)}></TextInput>
@@ -303,7 +319,7 @@ function SelectedList({
                       mutateAddCategory(categoryInput.trim())
                     }}
                     name={"plus"}
-                    color={"black"}
+                    color={mainColorHash}
                     size={24}
                   />
                 )}

@@ -7,10 +7,11 @@ interface props {
   id: string
 }
 import { EditMenuContext } from "../utils/context"
+import useAppStyling from "../utils/useAppStyling"
 
 function Task({ name, is_done, id }: props) {
   const setEditMenuOpen = useContext(EditMenuContext)
-
+  const { mainColor } = useAppStyling()
   return (
     <View
       className={
@@ -25,7 +26,7 @@ function Task({ name, is_done, id }: props) {
           id !== "0" ? setEditMenuOpen(id) : null
           Keyboard.dismiss()
         }}
-        className="text-lg font-normal">
+        className={`text-lg font-normal ${mainColor}`}>
         {name}
       </Text>
     </View>

@@ -61,7 +61,7 @@ const useAppStyle = create<appStyleState>((set) => ({
     getData("app_style") != null && getData("app_style").darkMode !== undefined
       ? //@ts-ignore
         getData("app_style")
-      : { darkMode: true },
+      : { darkMode: false },
   setAppStyle: (newAppStyle: appStyleType) =>
     set(() => {
       storeData("app_style", newAppStyle)

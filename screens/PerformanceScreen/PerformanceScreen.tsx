@@ -14,6 +14,7 @@ import Octicons from "react-native-vector-icons/Octicons"
 import { LineChart } from "react-native-chart-kit"
 import axios from "../utils/axiosConfig"
 import { useQuery } from "react-query"
+import useAppStyling from "../utils/useAppStyling"
 interface category {
   id: string | number
   name: string
@@ -30,6 +31,15 @@ function PerformanceScreen() {
     useState<boolean>(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
+  const {
+    mainColor,
+    mainColorHash,
+    bgColor,
+    buttonRoundness,
+    borderColor,
+    buttonColor,
+    dropDownMenuBorderColor,
+  } = useAppStyling()
   const { data: categories } = useQuery(["categories"], async () => {
     return axios
       .post("/category/get", { user_id: userInfoState.id })
@@ -201,7 +211,7 @@ function PerformanceScreen() {
   }
 
   const chartConfig = {
-    color: () => `rgba(0, 0, 0, 1)`,
+    color: () => mainColorHash,
     propsForBackgroundLines: { opacity: 0.2 },
     backgroundGradientFromOpacity: 0,
     backgroundGradientToOpacity: 0,
@@ -317,14 +327,14 @@ function PerformanceScreen() {
           ],
         }
   return (
-    <SafeAreaView>
+    <SafeAreaView className={`h-screen ${bgColor}`}>
       <View className="mt-8">
         <View className="flex-row w-full px-8">
-          <Text className="text-2xl">Your Performance</Text>
+          <Text className={`text-2xl ${mainColor}`}>Your Performance</Text>
           <View className="h-fit ml-auto">
             <Octicons
               name={"home"}
-              color={"black"}
+              color={mainColorHash}
               size={26}
               onPress={() => navigation.navigate("Home")}
             />
@@ -353,14 +363,14 @@ function PerformanceScreen() {
                 setOpenDropDownMenu(!isOpenDropDownMenu)
                 setOpenPerformanceMenu(false)
               }}
-              className="w-6/12 rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
+              className={`w-6/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
               style={{ elevation: 2 }}>
-              <Text className="text-base font-medium">
+              <Text className={`text-base font-medium ${mainColor}`}>
                 {selectedCategory === "" ? "None" : selectedCategory}
               </Text>
               <MaterialIcons
                 name="keyboard-arrow-down"
-                color={"black"}
+                color={mainColorHash}
                 size={20}
               />
             </TouchableOpacity>
@@ -370,15 +380,15 @@ function PerformanceScreen() {
                 setOpenPerformanceMenu(!isOpenPerformanceMenu)
                 setOpenDropDownMenu(false)
               }}
-              className="w-4/12 rounded-lg py-2 px-4 border-2 border-black bg-gray-50 flex-row items-center justify-between"
+              className={`w-4/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
               style={{ elevation: 2 }}>
-              <Text className="text-base font-medium">
+              <Text className={`text-base font-medium ${mainColor}`}>
                 {performanceType.charAt(0).toUpperCase() +
                   performanceType.slice(1)}
               </Text>
               <MaterialIcons
                 name="keyboard-arrow-down"
-                color={"black"}
+                color={mainColorHash}
                 size={20}
               />
             </TouchableOpacity>
@@ -387,23 +397,26 @@ function PerformanceScreen() {
             <View className="absolute top-[58px] w-full">
               <ScrollView
                 showsVerticalScrollIndicator={false}
-                className="z-50 max-h-[170px] mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
+                className={`z-50 max-h-[170px] mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
                 {categories != null && categories.length > 0
                   ? [
                       <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() => handlePress("All")}
-                        className="py-2 px-4 border-b border-gray-300"
+                        className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}
                         key={Math.round(Math.random() * 10000).toString()}>
-                        <Text className="text-base font-medium">All</Text>
+                        <Text className={`text-base font-medium ${mainColor}`}>
+                          All
+                        </Text>
                       </TouchableOpacity>,
                       ...categories.map((value: category) => (
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={() => handlePress(value.name)}
-                          className="py-2 px-4 border-b border-gray-300"
+                          className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}
                           key={value.id}>
-                          <Text className="text-base font-medium">
+                          <Text
+                            className={`text-base font-medium ${mainColor}`}>
                             {value.name}
                           </Text>
                         </TouchableOpacity>
@@ -417,15 +430,17 @@ function PerformanceScreen() {
             <View className="absolute top-[58px] w-full">
               <ScrollView
                 showsVerticalScrollIndicator={false}
-                className="z-50 max-h-[170px] mt-2 w-full border-2 border-black bg-gray-50 overflow-hidden rounded-lg">
+                className={`z-50 max-h-[170px] mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => {
                     setPerformanceType("daily")
                     setOpenPerformanceMenu(false)
                   }}
-                  className="py-2 px-4 border-b border-gray-300">
-                  <Text className="text-base font-medium">Daily</Text>
+                  className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                  <Text className={`text-base font-medium ${mainColor}`}>
+                    Daily
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -433,8 +448,10 @@ function PerformanceScreen() {
                     setPerformanceType("weekly")
                     setOpenPerformanceMenu(false)
                   }}
-                  className="py-2 px-4 border-b border-gray-300">
-                  <Text className="text-base font-medium">Weekly</Text>
+                  className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                  <Text className={`text-base font-medium ${mainColor}`}>
+                    Weekly
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -442,18 +459,20 @@ function PerformanceScreen() {
                     setPerformanceType("monthly")
                     setOpenPerformanceMenu(false)
                   }}
-                  className="py-2 px-4 border-b border-gray-300">
-                  <Text className="text-base font-medium">Monthly</Text>
+                  className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                  <Text className={`text-base font-medium ${mainColor}`}>
+                    Monthly
+                  </Text>
                 </TouchableOpacity>
               </ScrollView>
             </View>
           ) : null}
         </View>
         <View className="mt-6 px-8">
-          <Text className="text-lg">Total hours spent in:</Text>
-          <Text className="text-base  mt-2">
+          <Text className={`text-lg ${mainColor}`}>Total hours spent in:</Text>
+          <Text className={`text-base mt-2 ${mainColor}`}>
             Last 7 days:
-            <Text className="font-bold">
+            <Text className={`font-bold`}>
               {performanceStats != null &&
               performanceStats.total_time_week != null
                 ? ` ${Math.floor(
@@ -468,7 +487,7 @@ function PerformanceScreen() {
                 : " 0 hours"}
             </Text>
           </Text>
-          <Text className="text-base mt-2">
+          <Text className={`text-base mt-2 ${mainColor}`}>
             Last 30 days:
             <Text className="font-bold">
               {performanceStats != null &&
@@ -485,7 +504,7 @@ function PerformanceScreen() {
                 : " 0 hours"}
             </Text>
           </Text>
-          <Text className="mt-12 text-xl">
+          <Text className={`mt-12 text-xl ${mainColor}`}>
             Total time spent:{" "}
             <Text className="font-bold">
               {performanceStats != null && performanceStats.total_time != null

@@ -20,7 +20,7 @@ function Button({ name, onPressFunc }: props) {
         await onPressFunc()
         setLoading(false)
       }}
-      className={`w-6/12 ${buttonRoundness} h-12 ${buttonColor} border-2 ${borderColor} justify-center items-center mb-3`}>
+      className={`w-6/12 ${buttonRoundness} h-12 ${buttonColor} ${borderColor} justify-center items-center mb-3`}>
       {isLoading ? (
         <ActivityIndicator />
       ) : (
