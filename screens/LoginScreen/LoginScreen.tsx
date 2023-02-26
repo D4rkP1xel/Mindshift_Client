@@ -14,9 +14,10 @@ import {
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../components/Button"
 import axios from "../utils/axiosConfig"
-import { useUserInfo } from "../utils/zustandStateManager"
+import { useAppStyle, useUserInfo } from "../utils/zustandStateManager"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useAppStyling from "../utils/useAppStyling"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -35,6 +36,7 @@ function LoginScreen() {
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
   const userInfoState = useUserInfo((state) => state.userInfo)
+  const setDarkModeState = useAppStyle((state) => state.setAppStyle)
   const {
     fullLogoPath,
     mainColor,
@@ -43,10 +45,27 @@ function LoginScreen() {
     buttonRoundness,
     secondaryBorderColor,
   } = useAppStyling()
+  // useEffect(() => {
+  //   if (userInfoState.id !== undefined && userInfoState.id !== null) {
+  //     navigation.navigate("Home")
+  //   }
+  // }, [userInfoState])
   useEffect(() => {
-    if (userInfoState.id !== undefined && userInfoState.id !== null) {
-      navigation.navigate("Home")
+    const getData = async () => {
+      try {
+        const isDarkModeValue = await AsyncStorage.getItem("app_style")
+        isDarkModeValue != null && JSON.parse(isDarkModeValue).darkMode != null
+          ? setDarkModeState(JSON.parse(isDarkModeValue))
+          : null
+        const jsonValue = await AsyncStorage.getItem("user_info")
+        return jsonValue != null && JSON.parse(jsonValue).id != null
+          ? navigation.navigate("Home")
+          : null
+      } catch (e) {
+        console.error("Async Store Failed")
+      }
     }
+    getData()
   }, [userInfoState])
 
   async function signIn(input: string, password: string) {

@@ -43,11 +43,7 @@ const getData = async (key: string) => {
 }
 
 const useUserInfo = create<userInfoState>((set) => ({
-  userInfo:
-    getData("user_info") != null
-      ? //@ts-ignore
-        getData("user_info")
-      : { id: null, name: null, email: null, creation_date: new Date() },
+  userInfo: { id: null, name: null, email: null, creation_date: new Date() },
   setUserInfo: (newUserInfo: userType) =>
     set(() => {
       storeData("user_info", newUserInfo)
@@ -56,12 +52,7 @@ const useUserInfo = create<userInfoState>((set) => ({
 }))
 
 const useAppStyle = create<appStyleState>((set) => ({
-  appStyle:
-    //@ts-ignore
-    getData("app_style") != null && getData("app_style").darkMode !== undefined
-      ? //@ts-ignore
-        getData("app_style")
-      : { darkMode: false },
+  appStyle: { darkMode: false },
   setAppStyle: (newAppStyle: appStyleType) =>
     set(() => {
       storeData("app_style", newAppStyle)
