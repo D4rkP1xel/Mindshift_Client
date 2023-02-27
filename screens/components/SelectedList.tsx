@@ -48,6 +48,7 @@ function SelectedList({
     borderColor,
     secondaryBorderColor,
     dropDownMenuBorderColor,
+    trashCanColor,
   } = useAppStyling()
   function handlePress(value: string) {
     setSelectedCategory(value)
@@ -262,7 +263,7 @@ function SelectedList({
                             }>
                             <FontAwesome5
                               name={"trash"}
-                              color={"#fafafa50"}
+                              color={trashCanColor}
                               size={16}
                             />
                           </TouchableOpacity>

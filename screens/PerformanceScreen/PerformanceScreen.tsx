@@ -4,6 +4,7 @@ import {
   Dimensions,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native"
 import { useState } from "react"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
@@ -27,6 +28,7 @@ function PerformanceScreen() {
   const navigation = useNavigation<Nav>()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [performanceType, setPerformanceType] = useState("daily")
+  const [isGraphDataLoading, setGraphDataLoading] = useState(true) //this is for the loader in the graph
   const [isOpenPerformanceMenu, setOpenPerformanceMenu] =
     useState<boolean>(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
@@ -74,6 +76,7 @@ function PerformanceScreen() {
     // data for the graphs
     ["performance", [selectedCategory, performanceType]],
     async () => {
+      setGraphDataLoading(true)
       return axios
         .post("/category/getPerformance", {
           user_id: userInfoState.id,
@@ -104,7 +107,7 @@ function PerformanceScreen() {
               }
             }
             //console.log(dates)
-
+            setGraphDataLoading(false)
             return dates.map((month: string) => {
               let auxPerformance = res.data.tasks.filter(
                 (monthPerformance: { date: string; total_time: number }) =>
@@ -145,7 +148,7 @@ function PerformanceScreen() {
                 )
               )
             }
-
+            setGraphDataLoading(false)
             return dates.map((date) => {
               let auxPerformance = res.data.tasks.filter(
                 (weeklyPerformance: { date: string; total_time: number }) =>
@@ -176,7 +179,7 @@ function PerformanceScreen() {
                 .padStart(2, "0")}`
             )
           }
-
+          setGraphDataLoading(false)
           return dates.map((date) => {
             let auxPerformance = res.data.tasks.filter(
               (dailyPerformance: { date: string; total_time: number }) =>
@@ -195,6 +198,7 @@ function PerformanceScreen() {
           })
         })
         .catch((err) => {
+          setGraphDataLoading(false)
           console.log(err)
         })
     },
@@ -339,6 +343,17 @@ function PerformanceScreen() {
               onPress={() => navigation.navigate("Home")}
             />
           </View>
+        </View>
+        <View
+          className={
+            isGraphDataLoading
+              ? "relative w-screen flex-row"
+              : "hidden w-screen flex-row"
+          }>
+          <ActivityIndicator
+            className="absolute top-0 left-0 right-0 top-1"
+            size={"large"}
+          />
         </View>
         <View className="mt-12 right-2">
           <LineChart

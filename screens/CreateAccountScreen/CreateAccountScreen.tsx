@@ -62,7 +62,7 @@ function CreateAccountScreen() {
       <SafeAreaView className={`${bgColor} h-screen`}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 40}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}
           className="justify-center items-center mt-36">
           <View className="w-full items-center gap-5 mb-6">
             <View className="mb-2">

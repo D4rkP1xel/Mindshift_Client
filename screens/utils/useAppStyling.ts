@@ -19,5 +19,6 @@ export default function useAppStyling() {
     calendarBg: darkMode ? "#27272a" : "#fafafa",
     calendarDisabledDays: darkMode ? "#3f3f46" : "#d4d4d8",
     calendarEnabledDays: darkMode ? "#fafafa" : "#3f3f46",
+    trashCanColor: darkMode ? "#fafafa50" : "#3f3f46",
   }
 }

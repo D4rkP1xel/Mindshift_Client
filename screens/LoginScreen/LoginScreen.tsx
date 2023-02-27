@@ -57,16 +57,19 @@ function LoginScreen() {
         isDarkModeValue != null && JSON.parse(isDarkModeValue).darkMode != null
           ? setDarkModeState(JSON.parse(isDarkModeValue))
           : null
-        const jsonValue = await AsyncStorage.getItem("user_info")
-        return jsonValue != null && JSON.parse(jsonValue).id != null
-          ? navigation.navigate("Home")
-          : null
+        const userInfoValue = await AsyncStorage.getItem("user_info")
+        if (userInfoValue != null && JSON.parse(userInfoValue).id != null) {
+          setUserInfo(JSON.parse(userInfoValue))
+          navigation.navigate("Home")
+        }
+
+        return
       } catch (e) {
         console.error("Async Store Failed")
       }
     }
     getData()
-  }, [userInfoState])
+  }, [])
 
   async function signIn(input: string, password: string) {
     let requestBody = input.includes("@")
@@ -99,7 +102,7 @@ function LoginScreen() {
       <SafeAreaView className={`${bgColor} h-screen`}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 40}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}
           className="justify-center items-center mt-44">
           <View className="w-full items-center gap-5 mb-6">
             <View className="mb-2">

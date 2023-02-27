@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  ActivityIndicator,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -21,9 +22,7 @@ import getCustomDate, {
 } from "../utils/getCustomDate"
 import { useQuery } from "react-query"
 import Task from "../components/Task"
-import EditTaskMenu from "../components/EditTaskMenu"
 import { Calendar } from "react-native-calendars"
-import { EditMenuContext } from "../utils/context"
 import useAppStyling from "../utils/useAppStyling"
 
 interface task {
@@ -33,6 +32,7 @@ interface task {
   user_id: string
   is_done: number
   task_category_name: string
+  task_time: number
 }
 type Nav = {
   navigate: (value: string, params: object | void) => void
@@ -48,7 +48,7 @@ function HomeScreen() {
 
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const [isEditMenuOpen, setEditMenuOpen] = useState<string>("") //either stores an empty string or the id of the task
+
   const {
     mainColor,
     mainColorHash,
@@ -136,29 +136,6 @@ function HomeScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-      {isEditMenuOpen !== "" ? (
-        <EditTaskMenu
-          setEditMenuOpen={setEditMenuOpen}
-          initialTaskName={
-            tasks.filter((task: task) => task.id === isEditMenuOpen)[0].name ||
-            ""
-          }
-          id={isEditMenuOpen}
-          is_done={
-            tasks.filter((task: task) => task.id === isEditMenuOpen)[0].is_done
-          }
-          category={
-            tasks.filter((task: task) => task.id === isEditMenuOpen)[0]
-              .task_category_name
-          }
-          selectedDate={selectedDate}
-          refetchCalendarPerformance={refetchCalendarPerformance}
-          task_time={
-            tasks.filter((task: task) => task.id === isEditMenuOpen)[0]
-              .task_time
-          }
-        />
-      ) : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <SafeAreaView className={`${bgColor} h-screen`}>
           <View className="pt-6 px-8 pb-6 ">
@@ -204,34 +181,30 @@ function HomeScreen() {
                 </View>
               </View>
             </View>
-            {/* <Text className="text-sm text-gray-500">
-              {tasks != null
-                ? `${tasks.filter((task: task) => task.is_done === 1).length}/${
-                    tasks.length
-                  }`
-                : "0/0"}
-            </Text> */}
           </View>
 
           <ScrollView>
             <View className="mt-4 mb-24 px-8">
-              <EditMenuContext.Provider value={setEditMenuOpen}>
-                {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
-                  tasks.map((task: task) => {
-                    return (
-                      <Task
-                        name={task.name}
-                        is_done={task.is_done}
-                        id={task.id}
-                        key={task.id}></Task>
-                    )
-                  })
-                ) : isLoadingTasks ? null : (
-                  <Text className={`${mainColor}`}>
-                    No tasks added for this day
-                  </Text>
-                )}
-              </EditMenuContext.Provider>
+              {tasks != null && Array.isArray(tasks) && tasks.length > 0 ? (
+                tasks.map((task: task) => {
+                  return (
+                    <Task
+                      name={task.name}
+                      is_done={task.is_done}
+                      id={task.id}
+                      category={task.task_category_name}
+                      selectedDate={selectedDate}
+                      taskTime={task.task_time}
+                      key={task.id}></Task>
+                  )
+                })
+              ) : isLoadingTasks ? (
+                <ActivityIndicator size={"large"} />
+              ) : (
+                <Text className={`${mainColor}`}>
+                  No tasks added for this day
+                </Text>
+              )}
             </View>
           </ScrollView>
         </SafeAreaView>

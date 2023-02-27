@@ -1,17 +1,24 @@
-import { useContext } from "react"
 import { View, Text, Keyboard } from "react-native"
 
 interface props {
   name: string
   is_done: number
   id: string
+  category: string
+  selectedDate: string
+  taskTime: number
 }
-import { EditMenuContext } from "../utils/context"
-import useAppStyling from "../utils/useAppStyling"
+import { useNavigation } from "@react-navigation/native"
 
-function Task({ name, is_done, id }: props) {
-  const setEditMenuOpen = useContext(EditMenuContext)
+import useAppStyling from "../utils/useAppStyling"
+type Nav = {
+  navigate: (value: string, params: object | void) => void
+  addListener: Function
+}
+
+function Task({ name, is_done, id, category, selectedDate, taskTime }: props) {
   const { mainColor } = useAppStyling()
+  const navigation = useNavigation<Nav>()
   return (
     <View
       className={
@@ -23,7 +30,16 @@ function Task({ name, is_done, id }: props) {
       }>
       <Text
         onPress={() => {
-          id !== "0" ? setEditMenuOpen(id) : null
+          id !== "0"
+            ? navigation.navigate("EditTask", {
+                id: id,
+                initialTaskName: name,
+                is_done: is_done,
+                category: category,
+                selectedDate: selectedDate,
+                task_time: taskTime,
+              })
+            : null
           Keyboard.dismiss()
         }}
         className={`text-lg font-normal ${mainColor}`}>

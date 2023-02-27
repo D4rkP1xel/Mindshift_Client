@@ -17,17 +17,10 @@ import { useMutation, useQuery, useQueryClient } from "react-query"
 import axios from "../utils/axiosConfig"
 import useAppStyling from "../utils/useAppStyling"
 import { useUserInfo } from "../utils/zustandStateManager"
-import SelectedList from "./SelectedList"
-
-interface props {
-  setEditMenuOpen: any
-  initialTaskName: string
-  id: string
-  is_done: number
-  category: string
-  selectedDate: string
-  refetchCalendarPerformance: Function
-  task_time: number
+import SelectedList from "../components/SelectedList"
+import { useNavigation } from "@react-navigation/native"
+type Nav = {
+  navigate: (value: string) => void
 }
 
 interface task {
@@ -40,22 +33,16 @@ interface task {
   task_time: number
 }
 
-function EditTaskMenu({
-  setEditMenuOpen,
-  initialTaskName,
-  id,
-  is_done,
-  category,
-  selectedDate,
-  refetchCalendarPerformance,
-  task_time,
-}: props) {
-  const [taskName, setTaskName] = useState(initialTaskName)
+function EditTaskScreen({ route }: any) {
+  const navigation = useNavigation<Nav>()
+  const [taskName, setTaskName] = useState(route.params.initialTaskName)
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
-  const [is_done_state, set_is_done_state] = useState(is_done)
+  const [is_done_state, set_is_done_state] = useState(route.params.is_done)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const [selectedCategory, setSelectedCategory] = useState<string>(category)
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    route.params.category
+  )
   const [isLoadingEditTask, setLoadingEditTask] = useState(false)
   const {
     mainColor,
@@ -67,14 +54,14 @@ function EditTaskMenu({
     borderColor,
   } = useAppStyling()
   const [taskHoursInput, setTaskHoursInput] = useState(
-    Math.floor(task_time / 60)
+    Math.floor(route.params.task_time / 60)
   )
   const [taskMinutesInput, setTaskMinutesInput] = useState(
-    task_time - Math.floor(task_time / 60) * 60
+    route.params.task_time - Math.floor(route.params.task_time / 60) * 60
   )
   const tasks: task[] | undefined = queryClient.getQueryData([
     "tasks",
-    selectedDate,
+    route.params.selectedDate,
   ])
   const { data: categories } = useQuery(["categories"], async () => {
     return axios
@@ -85,6 +72,7 @@ function EditTaskMenu({
       })
       .catch((err) => {
         console.log(err)
+        navigation.navigate("Home")
       })
   })
 
@@ -106,27 +94,29 @@ function EditTaskMenu({
           task_time_aux: number
         ]
       ) => {
-        if (initialTaskName.trim() !== params[0].trim()) {
+        if (route.params.initialTaskName.trim() !== params[0].trim()) {
           //change task name
           if (params[0].trim().length < 2) return
           if (
             tasks != null &&
             tasks
-              .filter((task: task) => task.id !== id)
+              .filter((task: task) => task.id !== route.params.id)
               .map((task: task) => task.name.toLowerCase())
               .includes(params[0].trim().toLowerCase())
           )
             return
 
-          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+          queryClient.cancelQueries({
+            queryKey: ["tasks", route.params.selectedDate],
+          })
           queryClient.setQueryData(
-            ["tasks", selectedDate],
+            ["tasks", route.params.selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
               for (let index = 0; index < prev.length; index++) {
                 let task = prev[index]
-                if (task.id === id) {
+                if (task.id === route.params.id) {
                   prev[index].name = params[0]
                   break
                 }
@@ -135,16 +125,18 @@ function EditTaskMenu({
             }
           )
         }
-        if (is_done !== params[1]) {
-          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+        if (route.params.is_done !== params[1]) {
+          queryClient.cancelQueries({
+            queryKey: ["tasks", route.params.selectedDate],
+          })
           queryClient.setQueryData(
-            ["tasks", selectedDate],
+            ["tasks", route.params.selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
               for (let index = 0; index < prev.length; index++) {
                 let task = prev[index]
-                if (task.id === id) {
+                if (task.id === route.params.id) {
                   prev[index].is_done = params[1]
                   break
                 }
@@ -153,16 +145,18 @@ function EditTaskMenu({
             }
           )
         }
-        if (category !== params[2]) {
-          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+        if (route.params.category !== params[2]) {
+          queryClient.cancelQueries({
+            queryKey: ["tasks", route.params.selectedDate],
+          })
           queryClient.setQueryData(
-            ["tasks", selectedDate],
+            ["tasks", route.params.selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
               for (let index = 0; index < prev.length; index++) {
                 let task = prev[index]
-                if (task.id === id) {
+                if (task.id === route.params.id) {
                   prev[index].task_category_name = params[2]
                   break
                 }
@@ -171,16 +165,18 @@ function EditTaskMenu({
             }
           )
         }
-        if (task_time !== params[3]) {
-          queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+        if (route.params.task_time !== params[3]) {
+          queryClient.cancelQueries({
+            queryKey: ["tasks", route.params.selectedDate],
+          })
           queryClient.setQueryData(
-            ["tasks", selectedDate],
+            ["tasks", route.params.selectedDate],
             (prev: task[] | undefined | void) => {
               if (prev == null) return
 
               for (let index = 0; index < prev.length; index++) {
                 let task = prev[index]
-                if (task.id === id) {
+                if (task.id === route.params.id) {
                   prev[index].task_time = params[3]
                   break
                 }
@@ -191,7 +187,8 @@ function EditTaskMenu({
         }
       },
       onSuccess: () => {
-        refetchCalendarPerformance()
+        queryClient.refetchQueries(["tasks", route.params.selectedDate])
+        queryClient.refetchQueries(["calendar_performance"])
       },
     }
   )
@@ -202,19 +199,19 @@ function EditTaskMenu({
     selected_category_aux: string,
     task_time_aux: number
   ) {
-    if (is_done !== is_done_aux) {
+    if (route.params.is_done !== is_done_aux) {
       try {
         await axios.post("/task/changedone", {
-          task_id: id,
+          task_id: route.params.id,
           is_done: is_done_aux,
         })
       } catch (err) {
         setLoadingEditTask(false)
         console.log(err)
-        setEditMenuOpen("")
+        navigation.navigate("Home")
       }
     }
-    if (initialTaskName.trim() !== taskNameAux.trim()) {
+    if (route.params.initialTaskName.trim() !== taskNameAux.trim()) {
       //change task name
       if (taskNameAux.trim().length < 2) {
         setLoadingEditTask(false)
@@ -224,7 +221,7 @@ function EditTaskMenu({
       if (
         tasks != null &&
         tasks
-          .filter((task: task) => task.id !== id)
+          .filter((task: task) => task.id !== route.params.id)
           .map((task: task) => task.name.toLowerCase())
           .includes(taskNameAux.trim().toLowerCase())
       ) {
@@ -234,54 +231,56 @@ function EditTaskMenu({
 
       try {
         await axios.post("/task/changename", {
-          task_id: id,
+          task_id: route.params.id,
           task_name: taskNameAux.trim(),
         })
       } catch (err) {
         setLoadingEditTask(false)
         console.log(err)
-        setEditMenuOpen("")
+        navigation.navigate("Home")
         return
       }
     }
 
-    if (category !== selected_category_aux) {
+    if (route.params.category !== selected_category_aux) {
       try {
         await axios.post("/task/changeCategory", {
-          task_id: id,
+          task_id: route.params.id,
           task_category_name: selected_category_aux,
         })
       } catch (err) {
         setLoadingEditTask(false)
         console.log(err)
-        setEditMenuOpen("")
+        navigation.navigate("Home")
       }
     }
 
-    if (task_time_aux !== task_time) {
+    if (task_time_aux !== route.params.task_time) {
       try {
         await axios.post("/task/changeTaskTime", {
-          task_id: id,
+          task_id: route.params.id,
           task_time: task_time_aux,
         })
       } catch (err) {
         setLoadingEditTask(false)
         console.log(err)
-        setEditMenuOpen("")
+        navigation.navigate("Home")
       }
     }
     setLoadingEditTask(false)
-    setEditMenuOpen("")
+    navigation.navigate("Home")
   }
   const { mutate: mutateDeleteTask } = useMutation(
     async (task_id: string) => await deleteTask(task_id),
     {
       onMutate: (task_id: string) => {
-        setEditMenuOpen("")
-        queryClient.cancelQueries({ queryKey: ["tasks", selectedDate] })
+        navigation.navigate("Home")
+        queryClient.cancelQueries({
+          queryKey: ["tasks", route.params.selectedDate],
+        })
 
         queryClient.setQueryData(
-          ["tasks", selectedDate],
+          ["tasks", route.params.selectedDate],
           (prev: task[] | undefined | void) => {
             if (prev == null) return []
 
@@ -298,7 +297,8 @@ function EditTaskMenu({
         )
       },
       onSuccess: () => {
-        refetchCalendarPerformance()
+        queryClient.refetchQueries(["tasks", route.params.selectedDate])
+        queryClient.refetchQueries(["calendar_performance"])
       },
     }
   )
@@ -309,7 +309,7 @@ function EditTaskMenu({
       })
     } catch (err) {
       console.log(err)
-      setEditMenuOpen("")
+      navigation.navigate("Home")
       return
     }
   }
@@ -330,7 +330,7 @@ function EditTaskMenu({
                   name={"close"}
                   color={mainColorHash}
                   size={32}
-                  onPress={() => setEditMenuOpen("")}
+                  onPress={() => navigation.navigate("Home")}
                 />
               </View>
             </View>
@@ -340,7 +340,7 @@ function EditTaskMenu({
               </Text>
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => mutateDeleteTask(id)}
+                onPress={() => mutateDeleteTask(route.params.id)}
                 className="w-2/12 rounded-full h-6 bg-red-500 justify-center items-center"
                 style={{ elevation: 2 }}>
                 <Text className="text-white">Delete</Text>
@@ -523,4 +523,4 @@ function EditTaskMenu({
   )
 }
 
-export default EditTaskMenu
+export default EditTaskScreen
