@@ -11,6 +11,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useNavigation } from "@react-navigation/native"
 import { useUserInfo, useAppStyle } from "../utils/zustandStateManager"
 import useAppStyling from "../utils/useAppStyling"
+import CustomStatusBar from "../components/StatusBar"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -32,6 +33,7 @@ function SettingsScreen() {
     <>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
+          <CustomStatusBar />
           <View className={`mt-6 px-8 h-full pb-14 `}>
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">

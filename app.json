@@ -2,7 +2,7 @@
   "expo": {
     "name": "MindShift",
     "slug": "ToDoMobileApp",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/mindshift-icon.png",
     "userInterfaceStyle": "light",
@@ -19,15 +19,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "3"
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/mindshift-icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.d4rkp1xel.ToDoMobileApp",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png"

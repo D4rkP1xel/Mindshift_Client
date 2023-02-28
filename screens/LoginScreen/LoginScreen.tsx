@@ -18,6 +18,7 @@ import { useAppStyle, useUserInfo } from "../utils/zustandStateManager"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useAppStyling from "../utils/useAppStyling"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import CustomStatusBar from "../components/StatusBar"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -100,6 +101,7 @@ function LoginScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView className={`${bgColor} h-screen`}>
+        <CustomStatusBar />
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}

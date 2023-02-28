@@ -7,6 +7,7 @@ import {
   Keyboard,
   ScrollView,
   ActivityIndicator,
+  StatusBar,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -24,6 +25,7 @@ import { useQuery } from "react-query"
 import Task from "../components/Task"
 import { Calendar } from "react-native-calendars"
 import useAppStyling from "../utils/useAppStyling"
+import CustomStatusBar from "../components/StatusBar"
 
 interface task {
   id: string
@@ -138,6 +140,7 @@ function HomeScreen() {
       </Modal>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <SafeAreaView className={`${bgColor} h-screen`}>
+          <CustomStatusBar />
           <View className="pt-6 px-8 pb-6 ">
             <View className="flex-row w-full">
               <Text className={`text-2xl ${mainColor}`}>

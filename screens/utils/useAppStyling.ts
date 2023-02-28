@@ -5,6 +5,7 @@ export default function useAppStyling() {
   return {
     mainColor: darkMode ? "text-zinc-100" : "text-zinc-800",
     bgColor: darkMode ? "bg-zinc-800" : "bg-zinc-50",
+    bgColorHash: darkMode ? "#27272a" : "#fafafa",
     mainColorHash: darkMode ? "#fafafa" : "#27272a",
     borderColor: darkMode
       ? "border-transparent border-0"
@@ -20,5 +21,6 @@ export default function useAppStyling() {
     calendarDisabledDays: darkMode ? "#3f3f46" : "#d4d4d8",
     calendarEnabledDays: darkMode ? "#fafafa" : "#3f3f46",
     trashCanColor: darkMode ? "#fafafa50" : "#3f3f46",
+    StatusBarColor: darkMode ? "light-content" : "dark-content",
   }
 }

@@ -19,6 +19,7 @@ import useAppStyling from "../utils/useAppStyling"
 import { useUserInfo } from "../utils/zustandStateManager"
 import SelectedList from "../components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
+import CustomStatusBar from "../components/StatusBar"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -56,9 +57,13 @@ function EditTaskScreen({ route }: any) {
   const [taskHoursInput, setTaskHoursInput] = useState(
     Math.floor(route.params.task_time / 60)
   )
+  const [isHoursFocused, setIsHoursFocused] = useState(false)
+  const [taskHoursFocusInput, setTaskHoursFocusInput] = useState("")
   const [taskMinutesInput, setTaskMinutesInput] = useState(
     route.params.task_time - Math.floor(route.params.task_time / 60) * 60
   )
+  const [isMinutesFocused, setIsMinutesFocused] = useState(false)
+  const [taskMinutesFocusInput, setTaskMinutesFocusInput] = useState("")
   const tasks: task[] | undefined = queryClient.getQueryData([
     "tasks",
     route.params.selectedDate,
@@ -199,6 +204,9 @@ function EditTaskScreen({ route }: any) {
     selected_category_aux: string,
     task_time_aux: number
   ) {
+    Keyboard.dismiss()
+    if (isHoursFocused) setIsHoursFocused(false)
+    if (isMinutesFocused) setIsMinutesFocused(false)
     if (route.params.is_done !== is_done_aux) {
       try {
         await axios.post("/task/changedone", {
@@ -323,6 +331,7 @@ function EditTaskScreen({ route }: any) {
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
+          <CustomStatusBar />
           <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">
@@ -375,17 +384,31 @@ function EditTaskScreen({ route }: any) {
                     keyboardType="number-pad"
                     className={`text-lg w-full ${mainColor} pl-2`}
                     multiline={false}
-                    value={taskHoursInput.toString()}
-                    onChangeText={(text) => {
+                    value={
+                      isHoursFocused
+                        ? taskHoursFocusInput
+                        : taskHoursInput.toString()
+                    }
+                    onFocus={() => {
+                      setTaskHoursFocusInput("")
+                      setIsHoursFocused(true)
+                    }}
+                    onEndEditing={() => {
                       if (
-                        !Number.isInteger(parseInt(text)) ||
-                        parseInt(text) == null ||
-                        parseInt(text) <= 0
+                        !Number.isInteger(parseInt(taskHoursFocusInput)) ||
+                        parseInt(taskHoursFocusInput) == null ||
+                        parseInt(taskHoursFocusInput) <= 0
                       )
                         setTaskHoursInput(0)
-                      else if (parseInt(text) >= 23) setTaskHoursInput(23)
-                      else setTaskHoursInput(parseInt(text))
-                    }}></TextInput>
+                      else if (parseInt(taskHoursFocusInput) >= 23)
+                        setTaskHoursInput(23)
+                      else setTaskHoursInput(parseInt(taskHoursFocusInput))
+
+                      setIsHoursFocused(false)
+                    }}
+                    onChangeText={(text) =>
+                      setTaskHoursFocusInput(text)
+                    }></TextInput>
                 </View>
                 <Text className={`text-lg mr-12 ${mainColor}`}>hours</Text>
               </View>
@@ -396,16 +419,29 @@ function EditTaskScreen({ route }: any) {
                     keyboardType="numeric"
                     className={`text-lg w-full ${mainColor} pl-2`}
                     multiline={false}
-                    value={taskMinutesInput.toString()}
-                    onChangeText={(text) => {
+                    value={
+                      isMinutesFocused
+                        ? taskMinutesFocusInput
+                        : taskMinutesInput.toString()
+                    }
+                    onFocus={() => {
+                      setTaskMinutesFocusInput("")
+                      setIsMinutesFocused(true)
+                    }}
+                    onEndEditing={() => {
                       if (
-                        !Number.isInteger(parseInt(text)) ||
-                        parseInt(text) == null ||
-                        parseInt(text) <= 0
+                        !Number.isInteger(parseInt(taskMinutesFocusInput)) ||
+                        parseInt(taskMinutesFocusInput) == null ||
+                        parseInt(taskMinutesFocusInput) <= 0
                       )
                         setTaskMinutesInput(0)
-                      else if (parseInt(text) >= 60) setTaskMinutesInput(60)
-                      else setTaskMinutesInput(parseInt(text))
+                      else if (parseInt(taskMinutesFocusInput) >= 60)
+                        setTaskMinutesInput(60)
+                      else setTaskMinutesInput(parseInt(taskMinutesFocusInput))
+                      setIsMinutesFocused(false)
+                    }}
+                    onChangeText={(text) => {
+                      setTaskMinutesFocusInput(text)
                     }}></TextInput>
                 </View>
                 <Text className={`text-lg ${mainColor}`}>minutes</Text>
@@ -510,7 +546,7 @@ function EditTaskScreen({ route }: any) {
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
                 style={{ elevation: 2 }}>
                 {isLoadingEditTask ? (
-                  <ActivityIndicator />
+                  <ActivityIndicator color={"#FFFFFF"} />
                 ) : (
                   <Text className="text-white text-lg">Save</Text>
                 )}

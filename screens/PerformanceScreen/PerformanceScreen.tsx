@@ -16,6 +16,7 @@ import { LineChart } from "react-native-chart-kit"
 import axios from "../utils/axiosConfig"
 import { useQuery } from "react-query"
 import useAppStyling from "../utils/useAppStyling"
+import CustomStatusBar from "../components/StatusBar"
 interface category {
   id: string | number
   name: string
@@ -332,6 +333,7 @@ function PerformanceScreen() {
         }
   return (
     <SafeAreaView className={`h-screen ${bgColor}`}>
+      <CustomStatusBar />
       <View className="mt-8">
         <View className="flex-row w-full px-8">
           <Text className={`text-2xl ${mainColor}`}>Your Performance</Text>
@@ -351,7 +353,7 @@ function PerformanceScreen() {
               : "hidden w-screen flex-row"
           }>
           <ActivityIndicator
-            className="absolute top-0 left-0 right-0 top-1"
+            className="absolute left-0 right-0 top-1"
             size={"large"}
           />
         </View>

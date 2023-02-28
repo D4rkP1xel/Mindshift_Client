@@ -17,6 +17,7 @@ import { useState } from "react"
 import axios from "../utils/axiosConfig"
 import { useNavigation } from "@react-navigation/native"
 import useAppStyling from "../utils/useAppStyling"
+import CustomStatusBar from "../components/StatusBar"
 
 type Nav = {
   navigate: (value: string) => void
@@ -60,6 +61,7 @@ function CreateAccountScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView className={`${bgColor} h-screen`}>
+        <CustomStatusBar />
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}
