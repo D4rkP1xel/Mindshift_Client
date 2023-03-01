@@ -205,8 +205,12 @@ function EditTaskScreen({ route }: any) {
     task_time_aux: number
   ) {
     Keyboard.dismiss()
-    if (isHoursFocused) setIsHoursFocused(false)
-    if (isMinutesFocused) setIsMinutesFocused(false)
+    if (isHoursFocused) {
+      onEndEditingHours(taskHoursFocusInput)
+    }
+    if (isMinutesFocused) {
+      onEndEditingMinutes(taskMinutesFocusInput)
+    }
     if (route.params.is_done !== is_done_aux) {
       try {
         await axios.post("/task/changedone", {
@@ -322,6 +326,31 @@ function EditTaskScreen({ route }: any) {
     }
   }
 
+  function onEndEditingHours(taskHoursFocus: string) {
+    if (
+      !Number.isInteger(parseInt(taskHoursFocus)) ||
+      parseInt(taskHoursFocus) == null ||
+      parseInt(taskHoursFocus) <= 0
+    )
+      setTaskHoursInput(0)
+    else if (parseInt(taskHoursFocus) >= 23) setTaskHoursInput(23)
+    else setTaskHoursInput(parseInt(taskHoursFocus))
+
+    setIsHoursFocused(false)
+  }
+
+  function onEndEditingMinutes(taskMinutesFocus: string) {
+    if (
+      !Number.isInteger(parseInt(taskMinutesFocus)) ||
+      parseInt(taskMinutesFocus) == null ||
+      parseInt(taskMinutesFocus) <= 0
+    )
+      setTaskMinutesInput(0)
+    else if (parseInt(taskMinutesFocus) >= 60) setTaskMinutesInput(60)
+    else setTaskMinutesInput(parseInt(taskMinutesFocus))
+    setIsMinutesFocused(false)
+  }
+
   return (
     <>
       <TouchableWithoutFeedback
@@ -394,17 +423,7 @@ function EditTaskScreen({ route }: any) {
                       setIsHoursFocused(true)
                     }}
                     onEndEditing={() => {
-                      if (
-                        !Number.isInteger(parseInt(taskHoursFocusInput)) ||
-                        parseInt(taskHoursFocusInput) == null ||
-                        parseInt(taskHoursFocusInput) <= 0
-                      )
-                        setTaskHoursInput(0)
-                      else if (parseInt(taskHoursFocusInput) >= 23)
-                        setTaskHoursInput(23)
-                      else setTaskHoursInput(parseInt(taskHoursFocusInput))
-
-                      setIsHoursFocused(false)
+                      onEndEditingHours(taskHoursFocusInput)
                     }}
                     onChangeText={(text) =>
                       setTaskHoursFocusInput(text)
@@ -429,16 +448,7 @@ function EditTaskScreen({ route }: any) {
                       setIsMinutesFocused(true)
                     }}
                     onEndEditing={() => {
-                      if (
-                        !Number.isInteger(parseInt(taskMinutesFocusInput)) ||
-                        parseInt(taskMinutesFocusInput) == null ||
-                        parseInt(taskMinutesFocusInput) <= 0
-                      )
-                        setTaskMinutesInput(0)
-                      else if (parseInt(taskMinutesFocusInput) >= 60)
-                        setTaskMinutesInput(60)
-                      else setTaskMinutesInput(parseInt(taskMinutesFocusInput))
-                      setIsMinutesFocused(false)
+                      onEndEditingMinutes(taskMinutesFocusInput)
                     }}
                     onChangeText={(text) => {
                       setTaskMinutesFocusInput(text)
