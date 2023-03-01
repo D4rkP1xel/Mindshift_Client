@@ -7,7 +7,6 @@ import {
   Keyboard,
   ScrollView,
   ActivityIndicator,
-  StatusBar,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -47,7 +46,7 @@ function HomeScreen() {
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
-
+  const [isMonthLoading, setIsMonthLoading] = useState(false)
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
 
@@ -94,7 +93,13 @@ function HomeScreen() {
   )
 
   useEffect(() => {
-    refetchCalendarPerformance()
+    async function refetchMonth() {
+      setIsMonthLoading(true)
+      await refetchCalendarPerformance()
+      setIsMonthLoading(false)
+    }
+
+    refetchMonth()
   }, [shownMonthCalendar])
 
   return (
@@ -108,7 +113,13 @@ function HomeScreen() {
             style={{
               backgroundColor: "rgba(0,0,0,0.5)",
             }}>
-            <View className="mt-32">
+            <View className="mt-32 relative">
+              {isMonthLoading ? (
+                <ActivityIndicator
+                  size={"large"}
+                  className="absolute z-50 w-full -top-14 left-auto right-auto"
+                />
+              ) : null}
               <Calendar
                 disableAllTouchEventsForDisabledDays={true}
                 theme={{
