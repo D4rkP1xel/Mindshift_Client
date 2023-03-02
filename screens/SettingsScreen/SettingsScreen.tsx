@@ -12,6 +12,8 @@ import { useNavigation } from "@react-navigation/native"
 import { useUserInfo, useAppStyle } from "../utils/zustandStateManager"
 import useAppStyling from "../utils/useAppStyling"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
+import Feather from "react-native-vector-icons/Feather"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -21,6 +23,7 @@ function SettingsScreen() {
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
   const getAppStyle = useAppStyle((state) => state.appStyle)
   const setAppStyle = useAppStyle((state) => state.setAppStyle)
+  const { isOffline, invalidateConnection } = getInternetStatus()
   const {
     mainColorHash,
     borderColor,
@@ -31,9 +34,20 @@ function SettingsScreen() {
   } = useAppStyling()
   return (
     <>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss()
+          invalidateConnection()
+        }}
+        accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
           <CustomStatusBar />
+          {isOffline ? (
+            <View className="absolute top-10 left-10">
+              <Feather name={"wifi-off"} color={"red"} size={26} />
+            </View>
+          ) : null}
+
           <View className={`mt-6 px-8 h-full pb-14 `}>
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">

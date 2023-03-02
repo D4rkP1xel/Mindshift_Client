@@ -20,6 +20,8 @@ import SelectedList from "../components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
 import useAppStyling from "../utils/useAppStyling"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
+import Feather from "react-native-vector-icons/Feather"
 
 interface task {
   id: string
@@ -47,6 +49,7 @@ function AddTaskScreen({ route }: any) {
     borderColor,
   } = useAppStyling()
   const [taskName, setTaskName] = useState("")
+  const { isOffline, invalidateConnection } = getInternetStatus()
   const [is_done_state, set_is_done_state] = useState(-1)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
@@ -225,10 +228,16 @@ function AddTaskScreen({ route }: any) {
         onPress={() => {
           Keyboard.dismiss()
           setOpenDropDownMenu(false)
+          invalidateConnection()
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
           <CustomStatusBar />
+          {isOffline ? (
+            <View className="absolute top-20 right-10">
+              <Feather name={"wifi-off"} color={"red"} size={26} />
+            </View>
+          ) : null}
           <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">

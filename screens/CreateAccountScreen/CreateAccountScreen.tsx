@@ -18,6 +18,8 @@ import axios from "../utils/axiosConfig"
 import { useNavigation } from "@react-navigation/native"
 import useAppStyling from "../utils/useAppStyling"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
+import Feather from "react-native-vector-icons/Feather"
 
 type Nav = {
   navigate: (value: string) => void
@@ -27,6 +29,7 @@ function CreateAccountScreen() {
   let [emailInput, setEmailInput] = useState("")
   let [usernameInput, setUsernameInput] = useState("") //cant have @
   let [passwordInput, setPasswordInput] = useState("")
+  const { isOffline, invalidateConnection } = getInternetStatus()
   const navigation = useNavigation<Nav>()
   const {
     fullLogoPath,
@@ -59,9 +62,19 @@ function CreateAccountScreen() {
     }
   }
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss()
+        invalidateConnection()
+      }}
+      accessible={false}>
       <SafeAreaView className={`${bgColor} h-screen`}>
         <CustomStatusBar />
+        {isOffline ? (
+          <View className="absolute top-20 right-10">
+            <Feather name={"wifi-off"} color={"red"} size={26} />
+          </View>
+        ) : null}
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}

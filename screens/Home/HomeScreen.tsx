@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
 import { useUserInfo } from "../utils/zustandStateManager"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
+import Feather from "react-native-vector-icons/Feather"
 import axios from "../utils/axiosConfig"
 import getCustomDate, {
   getDatePrettyFormat,
@@ -25,6 +26,7 @@ import Task from "../components/Task"
 import { Calendar } from "react-native-calendars"
 import useAppStyling from "../utils/useAppStyling"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
 
 interface task {
   id: string
@@ -46,6 +48,8 @@ function HomeScreen() {
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
+  const { isOffline, invalidateConnection } = getInternetStatus()
+
   const [isMonthLoading, setIsMonthLoading] = useState(false)
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
@@ -149,9 +153,20 @@ function HomeScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss()
+          invalidateConnection()
+        }}
+        accessible={false}>
         <SafeAreaView className={`${bgColor} h-screen`}>
           <CustomStatusBar />
+
+          {isOffline ? (
+            <View className="absolute top-20 right-10">
+              <Feather name={"wifi-off"} color={"red"} size={26} />
+            </View>
+          ) : null}
           <View className="pt-6 px-8 pb-6 ">
             <View className="flex-row w-full">
               <Text className={`text-2xl ${mainColor}`}>

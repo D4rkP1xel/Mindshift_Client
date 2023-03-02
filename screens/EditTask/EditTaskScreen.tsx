@@ -20,6 +20,8 @@ import { useUserInfo } from "../utils/zustandStateManager"
 import SelectedList from "../components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
+import Feather from "react-native-vector-icons/Feather"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -37,6 +39,7 @@ interface task {
 function EditTaskScreen({ route }: any) {
   const navigation = useNavigation<Nav>()
   const [taskName, setTaskName] = useState(route.params.initialTaskName)
+  const { isOffline, invalidateConnection } = getInternetStatus()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [is_done_state, set_is_done_state] = useState(route.params.is_done)
   const queryClient = useQueryClient()
@@ -357,10 +360,16 @@ function EditTaskScreen({ route }: any) {
         onPress={() => {
           Keyboard.dismiss()
           setOpenDropDownMenu(false)
+          invalidateConnection()
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
           <CustomStatusBar />
+          {isOffline ? (
+            <View className="absolute top-20 right-10">
+              <Feather name={"wifi-off"} color={"red"} size={26} />
+            </View>
+          ) : null}
           <View className="mt-6 px-8 h-full pb-14">
             <View className="flex-row w-full">
               <View className="h-fit ml-auto">

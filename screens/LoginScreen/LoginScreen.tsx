@@ -19,6 +19,8 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import useAppStyling from "../utils/useAppStyling"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
+import Feather from "react-native-vector-icons/Feather"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -34,6 +36,7 @@ interface loginResponse {
 function LoginScreen() {
   let [emailInput, setEmailInput] = useState("")
   let [passwordInput, setPasswordInput] = useState("")
+  const { isOffline, invalidateConnection } = getInternetStatus()
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
   const userInfoState = useUserInfo((state) => state.userInfo)
@@ -99,9 +102,19 @@ function LoginScreen() {
     }
   }
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss()
+        invalidateConnection()
+      }}
+      accessible={false}>
       <SafeAreaView className={`${bgColor} h-screen`}>
         <CustomStatusBar />
+        {isOffline ? (
+          <View className="absolute top-20 right-10">
+            <Feather name={"wifi-off"} color={"red"} size={26} />
+          </View>
+        ) : null}
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}

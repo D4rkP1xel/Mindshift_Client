@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native"
 import { useState } from "react"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
@@ -17,6 +19,8 @@ import axios from "../utils/axiosConfig"
 import { useQuery } from "react-query"
 import useAppStyling from "../utils/useAppStyling"
 import CustomStatusBar from "../components/StatusBar"
+import { getInternetStatus } from "../utils/getInternetStatus"
+import Feather from "react-native-vector-icons/Feather"
 interface category {
   id: string | number
   name: string
@@ -28,6 +32,7 @@ type Nav = {
 function PerformanceScreen() {
   const navigation = useNavigation<Nav>()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
+  const { isOffline, invalidateConnection } = getInternetStatus()
   const [performanceType, setPerformanceType] = useState("daily")
   const [isGraphDataLoading, setGraphDataLoading] = useState(true) //this is for the loader in the graph
   const [isOpenPerformanceMenu, setOpenPerformanceMenu] =
@@ -332,210 +337,228 @@ function PerformanceScreen() {
           ],
         }
   return (
-    <SafeAreaView className={`h-screen ${bgColor}`}>
-      <CustomStatusBar />
-      <View className="mt-8">
-        <View className="flex-row w-full px-8">
-          <Text className={`text-2xl ${mainColor}`}>Your Performance</Text>
-          <View className="h-fit ml-auto">
-            <Octicons
-              name={"home"}
-              color={mainColorHash}
-              size={26}
-              onPress={() => navigation.navigate("Home")}
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss()
+        invalidateConnection()
+      }}
+      accessible={false}>
+      <SafeAreaView className={`h-screen ${bgColor}`}>
+        <CustomStatusBar />
+        {isOffline ? (
+          <View className="absolute top-[70px] left-14">
+            <Feather name={"wifi-off"} color={"red"} size={26} />
+          </View>
+        ) : null}
+        <View className="mt-8">
+          <View className="flex-row w-full px-8">
+            <Text className={`text-2xl ${mainColor}`}>Your Performance</Text>
+            <View className="h-fit ml-auto">
+              <Octicons
+                name={"home"}
+                color={mainColorHash}
+                size={26}
+                onPress={() => navigation.navigate("Home")}
+              />
+            </View>
+          </View>
+          <View
+            className={
+              isGraphDataLoading
+                ? "relative w-screen flex-row"
+                : "hidden w-screen flex-row"
+            }>
+            <ActivityIndicator
+              className="absolute left-0 right-0 top-1"
+              size={"large"}
             />
           </View>
-        </View>
-        <View
-          className={
-            isGraphDataLoading
-              ? "relative w-screen flex-row"
-              : "hidden w-screen flex-row"
-          }>
-          <ActivityIndicator
-            className="absolute left-0 right-0 top-1"
-            size={"large"}
-          />
-        </View>
-        <View className="mt-12 right-2">
-          <LineChart
-            data={data}
-            width={Dimensions.get("window").width}
-            height={240}
-            chartConfig={chartConfig}
-            withOuterLines={false}
-            fromZero={true}
-            formatYLabel={(prev) =>
-              (Math.round(parseFloat(prev) * 10) / 10).toString() + "h"
-            }
-            xLabelsOffset={performanceType === "weekly" ? 20 : 14}
-            verticalLabelRotation={-90}
-          />
-        </View>
-        <View className="relative">
-          <View className="mt-4 flex-row justify-evenly w-full">
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                setOpenDropDownMenu(!isOpenDropDownMenu)
-                setOpenPerformanceMenu(false)
-              }}
-              className={`w-6/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
-              style={{ elevation: 2 }}>
-              <Text className={`text-base font-medium ${mainColor}`}>
-                {selectedCategory === "" ? "None" : selectedCategory}
-              </Text>
-              <MaterialIcons
-                name="keyboard-arrow-down"
-                color={mainColorHash}
-                size={20}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                setOpenPerformanceMenu(!isOpenPerformanceMenu)
-                setOpenDropDownMenu(false)
-              }}
-              className={`w-4/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
-              style={{ elevation: 2 }}>
-              <Text className={`text-base font-medium ${mainColor}`}>
-                {performanceType.charAt(0).toUpperCase() +
-                  performanceType.slice(1)}
-              </Text>
-              <MaterialIcons
-                name="keyboard-arrow-down"
-                color={mainColorHash}
-                size={20}
-              />
-            </TouchableOpacity>
+          <View className="mt-12 right-2">
+            <LineChart
+              data={data}
+              width={Dimensions.get("window").width}
+              height={240}
+              chartConfig={chartConfig}
+              withOuterLines={false}
+              fromZero={true}
+              formatYLabel={(prev) =>
+                (Math.round(parseFloat(prev) * 10) / 10).toString() + "h"
+              }
+              xLabelsOffset={performanceType === "weekly" ? 20 : 14}
+              verticalLabelRotation={-90}
+            />
           </View>
-          {isOpenDropDownMenu ? ( //CATEGORIES DROP DOWN MENU
-            <View className="absolute top-[58px] w-full">
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                className={`z-50 max-h-[170px] mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
-                {categories != null && categories.length > 0
-                  ? [
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => handlePress("All")}
-                        className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}
-                        key={Math.round(Math.random() * 10000).toString()}>
-                        <Text className={`text-base font-medium ${mainColor}`}>
-                          All
-                        </Text>
-                      </TouchableOpacity>,
-                      ...categories.map((value: category) => (
+          <View className="relative">
+            <View className="mt-4 flex-row justify-evenly w-full">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setOpenDropDownMenu(!isOpenDropDownMenu)
+                  setOpenPerformanceMenu(false)
+                }}
+                className={`w-6/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
+                style={{ elevation: 2 }}>
+                <Text className={`text-base font-medium ${mainColor}`}>
+                  {selectedCategory === "" ? "None" : selectedCategory}
+                </Text>
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  color={mainColorHash}
+                  size={20}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setOpenPerformanceMenu(!isOpenPerformanceMenu)
+                  setOpenDropDownMenu(false)
+                }}
+                className={`w-4/12 ${buttonRoundness} py-2 px-4 ${borderColor} ${buttonColor} flex-row items-center justify-between`}
+                style={{ elevation: 2 }}>
+                <Text className={`text-base font-medium ${mainColor}`}>
+                  {performanceType.charAt(0).toUpperCase() +
+                    performanceType.slice(1)}
+                </Text>
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  color={mainColorHash}
+                  size={20}
+                />
+              </TouchableOpacity>
+            </View>
+            {isOpenDropDownMenu ? ( //CATEGORIES DROP DOWN MENU
+              <View className="absolute top-[58px] w-full">
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  className={`z-50 max-h-[170px] mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
+                  {categories != null && categories.length > 0
+                    ? [
                         <TouchableOpacity
                           activeOpacity={0.7}
-                          onPress={() => handlePress(value.name)}
+                          onPress={() => handlePress("All")}
                           className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}
-                          key={value.id}>
+                          key={Math.round(Math.random() * 10000).toString()}>
                           <Text
                             className={`text-base font-medium ${mainColor}`}>
-                            {value.name}
+                            All
                           </Text>
-                        </TouchableOpacity>
-                      )),
-                    ]
-                  : null}
-              </ScrollView>
-            </View>
-          ) : null}
-          {isOpenPerformanceMenu ? ( //PERFORMANCE TYPE (daily, weekly, monthly) DROP DOWN MENU
-            <View className="absolute top-[58px] w-full">
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                className={`z-50 max-h-[170px] mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setPerformanceType("daily")
-                    setOpenPerformanceMenu(false)
-                  }}
-                  className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
-                  <Text className={`text-base font-medium ${mainColor}`}>
-                    Daily
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setPerformanceType("weekly")
-                    setOpenPerformanceMenu(false)
-                  }}
-                  className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
-                  <Text className={`text-base font-medium ${mainColor}`}>
-                    Weekly
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setPerformanceType("monthly")
-                    setOpenPerformanceMenu(false)
-                  }}
-                  className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
-                  <Text className={`text-base font-medium ${mainColor}`}>
-                    Monthly
-                  </Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
-          ) : null}
-        </View>
-        <View className="mt-6 px-8">
-          <Text className={`text-lg ${mainColor}`}>Total hours spent in:</Text>
-          <Text className={`text-base mt-2 ${mainColor}`}>
-            Last 7 days:
-            <Text className={`font-bold`}>
-              {performanceStats != null &&
-              performanceStats.total_time_week != null
-                ? ` ${Math.floor(
-                    parseInt(performanceStats.total_time_week) / 60
-                  )} ${
-                    Math.floor(
+                        </TouchableOpacity>,
+                        ...categories.map((value: category) => (
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => handlePress(value.name)}
+                            className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}
+                            key={value.id}>
+                            <Text
+                              className={`text-base font-medium ${mainColor}`}>
+                              {value.name}
+                            </Text>
+                          </TouchableOpacity>
+                        )),
+                      ]
+                    : null}
+                </ScrollView>
+              </View>
+            ) : null}
+            {isOpenPerformanceMenu ? ( //PERFORMANCE TYPE (daily, weekly, monthly) DROP DOWN MENU
+              <View className="absolute top-[58px] w-full">
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  className={`z-50 max-h-[170px] mt-2 w-full ${borderColor} ${buttonColor} overflow-hidden rounded-lg`}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setPerformanceType("daily")
+                      setOpenPerformanceMenu(false)
+                    }}
+                    className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                    <Text className={`text-base font-medium ${mainColor}`}>
+                      Daily
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setPerformanceType("weekly")
+                      setOpenPerformanceMenu(false)
+                    }}
+                    className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                    <Text className={`text-base font-medium ${mainColor}`}>
+                      Weekly
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setPerformanceType("monthly")
+                      setOpenPerformanceMenu(false)
+                    }}
+                    className={`py-2 px-4 border-b ${dropDownMenuBorderColor}`}>
+                    <Text className={`text-base font-medium ${mainColor}`}>
+                      Monthly
+                    </Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            ) : null}
+          </View>
+          <View className="mt-6 px-8">
+            <Text className={`text-lg ${mainColor}`}>
+              Total hours spent in:
+            </Text>
+            <Text className={`text-base mt-2 ${mainColor}`}>
+              Last 7 days:
+              <Text className={`font-bold`}>
+                {performanceStats != null &&
+                performanceStats.total_time_week != null
+                  ? ` ${Math.floor(
                       parseInt(performanceStats.total_time_week) / 60
-                    ) === 1
-                      ? "hour"
-                      : "hours"
-                  }`
-                : " 0 hours"}
+                    )} ${
+                      Math.floor(
+                        parseInt(performanceStats.total_time_week) / 60
+                      ) === 1
+                        ? "hour"
+                        : "hours"
+                    }`
+                  : " 0 hours"}
+              </Text>
             </Text>
-          </Text>
-          <Text className={`text-base mt-2 ${mainColor}`}>
-            Last 30 days:
-            <Text className="font-bold">
-              {performanceStats != null &&
-              performanceStats.total_time_month != null
-                ? ` ${Math.floor(
-                    parseInt(performanceStats.total_time_month) / 60
-                  )} ${
-                    Math.floor(
+            <Text className={`text-base mt-2 ${mainColor}`}>
+              Last 30 days:
+              <Text className="font-bold">
+                {performanceStats != null &&
+                performanceStats.total_time_month != null
+                  ? ` ${Math.floor(
                       parseInt(performanceStats.total_time_month) / 60
-                    ) === 1
-                      ? "hour"
-                      : "hours"
-                  }`
-                : " 0 hours"}
+                    )} ${
+                      Math.floor(
+                        parseInt(performanceStats.total_time_month) / 60
+                      ) === 1
+                        ? "hour"
+                        : "hours"
+                    }`
+                  : " 0 hours"}
+              </Text>
             </Text>
-          </Text>
-          <Text className={`mt-12 text-xl ${mainColor}`}>
-            Total time spent:{" "}
-            <Text className="font-bold">
-              {performanceStats != null && performanceStats.total_time != null
-                ? ` ${Math.floor(parseInt(performanceStats.total_time) / 60)} ${
-                    Math.floor(parseInt(performanceStats.total_time) / 60) === 1
-                      ? "hour"
-                      : "hours"
-                  }`
-                : " 0 hours"}
+            <Text className={`mt-12 text-xl ${mainColor}`}>
+              Total time spent:{" "}
+              <Text className="font-bold">
+                {performanceStats != null && performanceStats.total_time != null
+                  ? ` ${Math.floor(
+                      parseInt(performanceStats.total_time) / 60
+                    )} ${
+                      Math.floor(parseInt(performanceStats.total_time) / 60) ===
+                      1
+                        ? "hour"
+                        : "hours"
+                    }`
+                  : " 0 hours"}
+              </Text>
             </Text>
-          </Text>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   )
 }
 
