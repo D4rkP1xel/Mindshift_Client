@@ -13,20 +13,20 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import Octicons from "react-native-vector-icons/Octicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
-import { useUserInfo } from "../utils/zustandStateManager"
+import { useUserInfo } from "../../utils/zustandStateManager"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import Feather from "react-native-vector-icons/Feather"
-import axios from "../utils/axiosConfig"
+import axios from "../../utils/axiosConfig"
 import getCustomDate, {
   getDatePrettyFormat,
   getYesterday,
-} from "../utils/getCustomDate"
+} from "../../utils/getCustomDate"
 import { useQuery } from "react-query"
-import Task from "../components/Task"
+import Task from "../../utils/components/Task"
 import { Calendar } from "react-native-calendars"
-import useAppStyling from "../utils/useAppStyling"
-import CustomStatusBar from "../components/StatusBar"
-import { getInternetStatus } from "../utils/getInternetStatus"
+import useAppStyling from "../../utils/hooks/useAppStyling"
+import CustomStatusBar from "../../utils/components/StatusBar"
+import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 
 interface task {
   id: string
@@ -48,7 +48,7 @@ function HomeScreen() {
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
 
   const [isMonthLoading, setIsMonthLoading] = useState(false)
   const [isCalendarOpen, setCalendarOpen] = useState(false)
@@ -156,7 +156,6 @@ function HomeScreen() {
       <TouchableWithoutFeedback
         onPress={() => {
           Keyboard.dismiss()
-          invalidateConnection()
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor} h-screen`}>

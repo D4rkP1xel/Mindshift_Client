@@ -1,4 +1,4 @@
-import { useAppStyle } from "./zustandStateManager"
+import { useAppStyle } from "../zustandStateManager"
 
 export default function useAppStyling() {
   const { darkMode } = useAppStyle((state) => state.appStyle)

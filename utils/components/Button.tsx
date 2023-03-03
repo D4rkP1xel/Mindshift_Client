@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Text, TouchableOpacity, ActivityIndicator } from "react-native"
-import useAppStyling from "../utils/useAppStyling"
+import useAppStyling from "../hooks/useAppStyling"
 
 type props = {
   name: string

@@ -10,7 +10,7 @@ interface props {
 }
 import { useNavigation } from "@react-navigation/native"
 
-import useAppStyling from "../utils/useAppStyling"
+import useAppStyling from "../hooks/useAppStyling"
 type Nav = {
   navigate: (value: string, params: object | void) => void
   addListener: Function

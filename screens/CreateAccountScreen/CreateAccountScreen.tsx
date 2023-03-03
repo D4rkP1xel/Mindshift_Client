@@ -12,13 +12,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
-import CustomButton from "../components/Button"
+import CustomButton from "../../utils/components/Button"
 import { useState } from "react"
-import axios from "../utils/axiosConfig"
+import axios from "../../utils/axiosConfig"
 import { useNavigation } from "@react-navigation/native"
-import useAppStyling from "../utils/useAppStyling"
-import CustomStatusBar from "../components/StatusBar"
-import { getInternetStatus } from "../utils/getInternetStatus"
+import useAppStyling from "../../utils/hooks/useAppStyling"
+import CustomStatusBar from "../../utils/components/StatusBar"
+import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 
 type Nav = {
@@ -29,7 +29,7 @@ function CreateAccountScreen() {
   let [emailInput, setEmailInput] = useState("")
   let [usernameInput, setUsernameInput] = useState("") //cant have @
   let [passwordInput, setPasswordInput] = useState("")
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
   const navigation = useNavigation<Nav>()
   const {
     fullLogoPath,
@@ -65,7 +65,6 @@ function CreateAccountScreen() {
     <TouchableWithoutFeedback
       onPress={() => {
         Keyboard.dismiss()
-        invalidateConnection()
       }}
       accessible={false}>
       <SafeAreaView className={`${bgColor} h-screen`}>

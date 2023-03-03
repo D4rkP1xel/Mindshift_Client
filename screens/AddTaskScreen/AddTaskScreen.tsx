@@ -14,13 +14,13 @@ import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 
-import axios from "../utils/axiosConfig"
-import { useUserInfo } from "../utils/zustandStateManager"
-import SelectedList from "../components/SelectedList"
+import axios from "../../utils/axiosConfig"
+import { useUserInfo } from "../../utils/zustandStateManager"
+import SelectedList from "../../utils/components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
-import useAppStyling from "../utils/useAppStyling"
-import CustomStatusBar from "../components/StatusBar"
-import { getInternetStatus } from "../utils/getInternetStatus"
+import useAppStyling from "../../utils/hooks/useAppStyling"
+import CustomStatusBar from "../../utils/components/StatusBar"
+import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 
 interface task {
@@ -49,7 +49,7 @@ function AddTaskScreen({ route }: any) {
     borderColor,
   } = useAppStyling()
   const [taskName, setTaskName] = useState("")
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
   const [is_done_state, set_is_done_state] = useState(-1)
   const queryClient = useQueryClient()
   const userInfoState = useUserInfo((state) => state.userInfo)
@@ -228,7 +228,6 @@ function AddTaskScreen({ route }: any) {
         onPress={() => {
           Keyboard.dismiss()
           setOpenDropDownMenu(false)
-          invalidateConnection()
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor}`}>

@@ -12,14 +12,14 @@ import { useState } from "react"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useNavigation } from "@react-navigation/native"
-import { useUserInfo } from "../utils/zustandStateManager"
+import { useUserInfo } from "../../utils/zustandStateManager"
 import Octicons from "react-native-vector-icons/Octicons"
 import { LineChart } from "react-native-chart-kit"
-import axios from "../utils/axiosConfig"
+import axios from "../../utils/axiosConfig"
 import { useQuery } from "react-query"
-import useAppStyling from "../utils/useAppStyling"
-import CustomStatusBar from "../components/StatusBar"
-import { getInternetStatus } from "../utils/getInternetStatus"
+import useAppStyling from "../../utils/hooks/useAppStyling"
+import CustomStatusBar from "../../utils/components/StatusBar"
+import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 interface category {
   id: string | number
@@ -32,7 +32,7 @@ type Nav = {
 function PerformanceScreen() {
   const navigation = useNavigation<Nav>()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
   const [performanceType, setPerformanceType] = useState("daily")
   const [isGraphDataLoading, setGraphDataLoading] = useState(true) //this is for the loader in the graph
   const [isOpenPerformanceMenu, setOpenPerformanceMenu] =
@@ -340,7 +340,6 @@ function PerformanceScreen() {
     <TouchableWithoutFeedback
       onPress={() => {
         Keyboard.dismiss()
-        invalidateConnection()
       }}
       accessible={false}>
       <SafeAreaView className={`h-screen ${bgColor}`}>

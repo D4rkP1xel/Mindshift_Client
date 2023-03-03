@@ -1,5 +1,5 @@
 import { StatusBar } from "react-native"
-import useAppStyling from "../utils/useAppStyling"
+import useAppStyling from "../hooks/useAppStyling"
 
 function CustomStatusBar() {
   const { bgColorHash, StatusBarColor } = useAppStyling()

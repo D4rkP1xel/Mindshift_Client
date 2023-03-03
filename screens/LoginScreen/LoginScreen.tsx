@@ -12,14 +12,14 @@ import {
   Platform,
 } from "react-native"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
-import CustomButton from "../components/Button"
-import axios from "../utils/axiosConfig"
-import { useAppStyle, useUserInfo } from "../utils/zustandStateManager"
+import CustomButton from "../../utils/components/Button"
+import axios from "../../utils/axiosConfig"
+import { useAppStyle, useUserInfo } from "../../utils/zustandStateManager"
 import { SafeAreaView } from "react-native-safe-area-context"
-import useAppStyling from "../utils/useAppStyling"
+import useAppStyling from "../../utils/hooks/useAppStyling"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import CustomStatusBar from "../components/StatusBar"
-import { getInternetStatus } from "../utils/getInternetStatus"
+import CustomStatusBar from "../../utils/components/StatusBar"
+import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 type Nav = {
   navigate: (value: string) => void
@@ -36,7 +36,7 @@ interface loginResponse {
 function LoginScreen() {
   let [emailInput, setEmailInput] = useState("")
   let [passwordInput, setPasswordInput] = useState("")
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
   const userInfoState = useUserInfo((state) => state.userInfo)
@@ -105,7 +105,6 @@ function LoginScreen() {
     <TouchableWithoutFeedback
       onPress={() => {
         Keyboard.dismiss()
-        invalidateConnection()
       }}
       accessible={false}>
       <SafeAreaView className={`${bgColor} h-screen`}>

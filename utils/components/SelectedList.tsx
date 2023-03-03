@@ -13,9 +13,9 @@ import { useState } from "react"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5"
 import { useMutation } from "react-query"
-import { useUserInfo } from "../utils/zustandStateManager"
-import axios from "../utils/axiosConfig"
-import useAppStyling from "../utils/useAppStyling"
+import { useUserInfo } from "../zustandStateManager"
+import axios from "../axiosConfig"
+import useAppStyling from "../hooks/useAppStyling"
 interface props {
   selectedCategory: string
   setSelectedCategory: Function

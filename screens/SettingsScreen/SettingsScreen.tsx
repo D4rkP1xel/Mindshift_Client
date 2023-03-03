@@ -9,10 +9,10 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { useNavigation } from "@react-navigation/native"
-import { useUserInfo, useAppStyle } from "../utils/zustandStateManager"
-import useAppStyling from "../utils/useAppStyling"
-import CustomStatusBar from "../components/StatusBar"
-import { getInternetStatus } from "../utils/getInternetStatus"
+import { useUserInfo, useAppStyle } from "../../utils/zustandStateManager"
+import useAppStyling from "../../utils/hooks/useAppStyling"
+import CustomStatusBar from "../../utils/components/StatusBar"
+import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 type Nav = {
   navigate: (value: string) => void
@@ -23,7 +23,7 @@ function SettingsScreen() {
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
   const getAppStyle = useAppStyle((state) => state.appStyle)
   const setAppStyle = useAppStyle((state) => state.setAppStyle)
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
   const {
     mainColorHash,
     borderColor,
@@ -37,7 +37,6 @@ function SettingsScreen() {
       <TouchableWithoutFeedback
         onPress={() => {
           Keyboard.dismiss()
-          invalidateConnection()
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
