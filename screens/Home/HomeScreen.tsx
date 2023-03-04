@@ -37,6 +37,7 @@ interface task {
   task_category_name: string
   task_time: number
 }
+
 type Nav = {
   navigate: (value: string, params: object | void) => void
   addListener: Function
