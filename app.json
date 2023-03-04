@@ -7,7 +7,7 @@
     "icon": "./assets/mindshift-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/mindshift-full-logo.png",
+      "image": "./assets/mindshift-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
