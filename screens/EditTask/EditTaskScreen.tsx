@@ -39,7 +39,7 @@ interface task {
 function EditTaskScreen({ route }: any) {
   const navigation = useNavigation<Nav>()
   const [taskName, setTaskName] = useState(route.params.initialTaskName)
-  const { isOffline, invalidateConnection } = getInternetStatus()
+  const { isOffline } = getInternetStatus()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [is_done_state, set_is_done_state] = useState(route.params.is_done)
   const queryClient = useQueryClient()
@@ -360,7 +360,6 @@ function EditTaskScreen({ route }: any) {
         onPress={() => {
           Keyboard.dismiss()
           setOpenDropDownMenu(false)
-          invalidateConnection()
         }}
         accessible={false}>
         <SafeAreaView className={`${bgColor}`}>
