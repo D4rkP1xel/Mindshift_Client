@@ -208,12 +208,7 @@ function EditTaskScreen({ route }: any) {
     task_time_aux: number
   ) {
     Keyboard.dismiss()
-    if (isHoursFocused) {
-      onEndEditingHours(taskHoursFocusInput)
-    }
-    if (isMinutesFocused) {
-      onEndEditingMinutes(taskMinutesFocusInput)
-    }
+
     if (route.params.is_done !== is_done_aux) {
       try {
         await axios.post("/task/changedone", {
@@ -227,6 +222,7 @@ function EditTaskScreen({ route }: any) {
       }
     }
     if (route.params.initialTaskName.trim() !== taskNameAux.trim()) {
+      //change name
       //change task name
       if (taskNameAux.trim().length < 2) {
         setLoadingEditTask(false)
@@ -258,6 +254,7 @@ function EditTaskScreen({ route }: any) {
     }
 
     if (route.params.category !== selected_category_aux) {
+      //change category
       try {
         await axios.post("/task/changeCategory", {
           task_id: route.params.id,
@@ -271,6 +268,7 @@ function EditTaskScreen({ route }: any) {
     }
 
     if (task_time_aux !== route.params.task_time) {
+      //change time
       try {
         await axios.post("/task/changeTaskTime", {
           task_id: route.params.id,
@@ -329,29 +327,45 @@ function EditTaskScreen({ route }: any) {
     }
   }
 
-  function onEndEditingHours(taskHoursFocus: string) {
+  function onEndEditingHours(taskHoursFocus: string): number {
+    let time_aux = 0
     if (
       !Number.isInteger(parseInt(taskHoursFocus)) ||
       parseInt(taskHoursFocus) == null ||
       parseInt(taskHoursFocus) <= 0
-    )
+    ) {
       setTaskHoursInput(0)
-    else if (parseInt(taskHoursFocus) >= 23) setTaskHoursInput(23)
-    else setTaskHoursInput(parseInt(taskHoursFocus))
+      time_aux = taskMinutesInput
+    } else if (parseInt(taskHoursFocus) >= 23) {
+      setTaskHoursInput(23)
+      time_aux = 23 * 60 + taskMinutesInput
+    } else {
+      time_aux = parseInt(taskHoursFocus) * 60 + taskMinutesInput
+      setTaskHoursInput(parseInt(taskHoursFocus))
+    }
 
     setIsHoursFocused(false)
+    return time_aux
   }
 
-  function onEndEditingMinutes(taskMinutesFocus: string) {
+  function onEndEditingMinutes(taskMinutesFocus: string): number {
+    let time_aux = 0
     if (
       !Number.isInteger(parseInt(taskMinutesFocus)) ||
       parseInt(taskMinutesFocus) == null ||
       parseInt(taskMinutesFocus) <= 0
-    )
+    ) {
+      time_aux = taskHoursInput * 60
       setTaskMinutesInput(0)
-    else if (parseInt(taskMinutesFocus) >= 60) setTaskMinutesInput(60)
-    else setTaskMinutesInput(parseInt(taskMinutesFocus))
+    } else if (parseInt(taskMinutesFocus) >= 60) {
+      setTaskMinutesInput(60)
+      time_aux = taskHoursInput * 60 + 60
+    } else {
+      time_aux = taskHoursInput * 60 + parseInt(taskMinutesFocus)
+      setTaskMinutesInput(parseInt(taskMinutesFocus))
+    }
     setIsMinutesFocused(false)
+    return time_aux
   }
 
   return (
@@ -558,7 +572,11 @@ function EditTaskScreen({ route }: any) {
                     taskName,
                     is_done_state,
                     selectedCategory,
-                    taskHoursInput * 60 + taskMinutesInput,
+                    isHoursFocused
+                      ? onEndEditingHours(taskHoursFocusInput)
+                      : isMinutesFocused
+                      ? onEndEditingMinutes(taskMinutesFocusInput)
+                      : taskHoursInput * 60 + taskMinutesInput,
                   ])
                 }}
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"

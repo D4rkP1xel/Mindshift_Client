@@ -152,12 +152,6 @@ function AddTaskScreen({ route }: any) {
     task_time_aux: number
   ) {
     Keyboard.dismiss()
-    if (isHoursFocused) {
-      onEndEditingHours(taskHoursFocusInput)
-    }
-    if (isMinutesFocused) {
-      onEndEditingMinutes(taskMinutesFocusInput)
-    }
     if (taskNameAux.length < 2) {
       setLoadingNewTask(false)
       return Alert.alert("Minimum size is 2 letters.")
@@ -198,29 +192,45 @@ function AddTaskScreen({ route }: any) {
     }
   }
 
-  function onEndEditingHours(taskHoursFocus: string) {
+  function onEndEditingHours(taskHoursFocus: string): number {
+    let time_aux = 0
     if (
       !Number.isInteger(parseInt(taskHoursFocus)) ||
       parseInt(taskHoursFocus) == null ||
       parseInt(taskHoursFocus) <= 0
-    )
+    ) {
       setTaskHoursInput(0)
-    else if (parseInt(taskHoursFocus) >= 23) setTaskHoursInput(23)
-    else setTaskHoursInput(parseInt(taskHoursFocus))
+      time_aux = taskMinutesInput
+    } else if (parseInt(taskHoursFocus) >= 23) {
+      setTaskHoursInput(23)
+      time_aux = 23 * 60 + taskMinutesInput
+    } else {
+      time_aux = parseInt(taskHoursFocus) * 60 + taskMinutesInput
+      setTaskHoursInput(parseInt(taskHoursFocus))
+    }
 
     setIsHoursFocused(false)
+    return time_aux
   }
 
-  function onEndEditingMinutes(taskMinutesFocus: string) {
+  function onEndEditingMinutes(taskMinutesFocus: string): number {
+    let time_aux = 0
     if (
       !Number.isInteger(parseInt(taskMinutesFocus)) ||
       parseInt(taskMinutesFocus) == null ||
       parseInt(taskMinutesFocus) <= 0
-    )
+    ) {
+      time_aux = taskHoursInput * 60
       setTaskMinutesInput(0)
-    else if (parseInt(taskMinutesFocus) >= 60) setTaskMinutesInput(60)
-    else setTaskMinutesInput(parseInt(taskMinutesFocus))
+    } else if (parseInt(taskMinutesFocus) >= 60) {
+      setTaskMinutesInput(60)
+      time_aux = taskHoursInput * 60 + 60
+    } else {
+      time_aux = taskHoursInput * 60 + parseInt(taskMinutesFocus)
+      setTaskMinutesInput(parseInt(taskMinutesFocus))
+    }
     setIsMinutesFocused(false)
+    return time_aux
   }
   return (
     <>
@@ -416,7 +426,11 @@ function AddTaskScreen({ route }: any) {
                     taskName,
                     is_done_state,
                     selectedCategory === "" ? "None" : selectedCategory,
-                    taskHoursInput * 60 + taskMinutesInput,
+                    isHoursFocused
+                      ? onEndEditingHours(taskHoursFocusInput)
+                      : isMinutesFocused
+                      ? onEndEditingMinutes(taskMinutesFocusInput)
+                      : taskHoursInput * 60 + taskMinutesInput,
                   ])
                 }}
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
