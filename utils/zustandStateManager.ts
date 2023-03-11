@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { task } from "./types"
 
 interface userType {
   id: string | null
@@ -10,13 +11,27 @@ interface userType {
 interface appStyleType {
   darkMode: boolean
 }
+interface offlineType {
+  offline: boolean
+}
 interface userInfoState {
-  userInfo: any
+  userInfo: userType
   setUserInfo: any
 }
 interface appStyleState {
-  appStyle: any
+  appStyle: { darkMode: boolean }
   setAppStyle: any
+}
+
+interface offlineState {
+  isOffline: { offline: boolean }
+  setOffline: any
+}
+
+interface localTasksState {
+  localTasks: { tasks: task[] }
+  setLocalTasks: any
+  addLocalTask: any
 }
 
 // const useUserInfo = create<userInfoState>((set) => ({
@@ -60,4 +75,37 @@ const useAppStyle = create<appStyleState>((set) => ({
     }),
 }))
 
-export { useUserInfo, useAppStyle }
+const useOffline = create<offlineState>((set) => ({
+  isOffline: { offline: false },
+  setOffline: (newOfflineState: offlineType) =>
+    set(() => {
+      storeData("offline_info", newOfflineState)
+      return { isOffline: newOfflineState }
+    }),
+}))
+
+const useLocalTasks = create<localTasksState>((set) => ({
+  localTasks: { tasks: [] },
+  setLocalTasks: (newLocalTasks: { tasks: task[] }) =>
+    set(() => {
+      storeData("local_tasks", newLocalTasks)
+      return { localTasks: newLocalTasks }
+    }),
+  addLocalTask: (newLocalTask: task) => {
+    //@ts-ignore
+    set(async () => {
+      try {
+        let currentLocalTasks: task[] = (await getData("local_tasks")).tasks
+        currentLocalTasks.push(newLocalTask)
+        storeData("local_tasks", currentLocalTasks)
+        return { localTasks: currentLocalTasks }
+      }
+      catch (err) {
+        console.log(err)
+      }
+
+    })
+  }
+}))
+
+export { useUserInfo, useAppStyle, useOffline, useLocalTasks }

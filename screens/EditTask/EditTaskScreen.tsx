@@ -22,18 +22,9 @@ import { useNavigation } from "@react-navigation/native"
 import CustomStatusBar from "../../utils/components/StatusBar"
 import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
+import { task } from "../../utils/types"
 type Nav = {
   navigate: (value: string) => void
-}
-
-interface task {
-  id: string
-  name: string
-  date: string | number
-  user_id: string
-  is_done: number
-  task_category_name: string
-  task_time: number
 }
 
 function EditTaskScreen({ route }: any) {
