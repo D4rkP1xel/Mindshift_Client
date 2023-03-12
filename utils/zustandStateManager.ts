@@ -12,7 +12,7 @@ interface appStyleType {
   darkMode: boolean
 }
 interface offlineType {
-  offline: boolean
+  offlineMode: boolean
 }
 interface userInfoState {
   userInfo: userType
@@ -24,14 +24,14 @@ interface appStyleState {
 }
 
 interface offlineState {
-  isOffline: { offline: boolean }
-  setOffline: any
+  isOfflineMode: { offlineMode: boolean }
+  setOfflineMode: any
 }
 
 interface localTasksState {
-  localTasks: { tasks: task[] }
+  localTasks: any
   setLocalTasks: any
-  addLocalTask: any
+  //addLocalTask: any
 }
 
 // const useUserInfo = create<userInfoState>((set) => ({
@@ -75,37 +75,47 @@ const useAppStyle = create<appStyleState>((set) => ({
     }),
 }))
 
-const useOffline = create<offlineState>((set) => ({
-  isOffline: { offline: false },
-  setOffline: (newOfflineState: offlineType) =>
+const useOfflineMode = create<offlineState>((set) => ({
+  isOfflineMode: { offlineMode: false },
+  setOfflineMode: (newOfflineModeState: offlineType) =>
     set(() => {
-      storeData("offline_info", newOfflineState)
-      return { isOffline: newOfflineState }
+      storeData("offline_mode", newOfflineModeState)
+      return { isOfflineMode: newOfflineModeState }
     }),
 }))
 
 const useLocalTasks = create<localTasksState>((set) => ({
-  localTasks: { tasks: [] },
-  setLocalTasks: (newLocalTasks: { tasks: task[] }) =>
-    set(() => {
-      storeData("local_tasks", newLocalTasks)
-      return { localTasks: newLocalTasks }
-    }),
-  addLocalTask: (newLocalTask: task) => {
-    //@ts-ignore
-    set(async () => {
-      try {
-        let currentLocalTasks: task[] = (await getData("local_tasks")).tasks
-        currentLocalTasks.push(newLocalTask)
-        storeData("local_tasks", currentLocalTasks)
-        return { localTasks: currentLocalTasks }
-      }
-      catch (err) {
-        console.log(err)
-      }
+  localTasks: {},
+  setLocalTasks: async (newLocalTasks: { tasks: task[] }, newLocalTasksDate: string) => {
+    try {
+      const data = await getData("local_tasks")
+      const localTasksAux = data !== null ? data : {}
+      localTasksAux[newLocalTasksDate] = newLocalTasks //addTaskScreen sends all the tasks of the day and stores them after
+      await storeData("local_tasks", localTasksAux)
+      set(() => {
+        return { localTasks: newLocalTasks }
+      })
+    }
+    catch (err) {
+      console.log(err)
+    }
 
-    })
   }
+
+  // addLocalTask: (newLocalTask: task) => {
+  //   //@ts-ignore
+  //   set(async () => {
+  //     try {
+  //       let currentLocalTasks: task[] = (await getData("local_tasks")).tasks
+  //       currentLocalTasks.push(newLocalTask)
+  //       storeData("local_tasks", currentLocalTasks)
+  //       return { localTasks: currentLocalTasks }
+  //     }
+  //     catch (err) {
+  //       console.log(err)
+  //     }
+  //   })
+  // }
 }))
 
-export { useUserInfo, useAppStyle, useOffline, useLocalTasks }
+export { useUserInfo, useAppStyle, useOfflineMode, useLocalTasks }

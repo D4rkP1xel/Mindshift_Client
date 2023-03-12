@@ -13,9 +13,12 @@ import {
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
-
 import axios from "../../utils/axiosConfig"
-import { useUserInfo } from "../../utils/zustandStateManager"
+import {
+  useLocalTasks,
+  useOfflineMode,
+  useUserInfo,
+} from "../../utils/zustandStateManager"
 import SelectedList from "../../utils/components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
 import useAppStyling from "../../utils/hooks/useAppStyling"
@@ -23,6 +26,7 @@ import CustomStatusBar from "../../utils/components/StatusBar"
 import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 import { task } from "../../utils/types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 type Nav = {
   navigate: (value: string) => void
@@ -43,6 +47,7 @@ function AddTaskScreen({ route }: any) {
   const { isOffline } = getInternetStatus()
   const [is_done_state, set_is_done_state] = useState(-1)
   const queryClient = useQueryClient()
+  const setLocalTasks = useLocalTasks((state) => state.setLocalTasks)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [taskHoursInput, setTaskHoursInput] = useState(0)
@@ -54,10 +59,20 @@ function AddTaskScreen({ route }: any) {
   const navigation = useNavigation<Nav>()
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [isLoadingNewTask, setLoadingNewTask] = useState(false)
-  const tasks: task[] | undefined = queryClient.getQueryData([
-    "tasks",
-    route.params.selectedDate,
-  ])
+  const getOfflineMode = useOfflineMode((state) => state.isOfflineMode)
+  const getData = async (key: string) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key)
+      return jsonValue != null
+        ? JSON.parse(jsonValue)[route.params.selectedDate]
+        : null
+    } catch (e) {
+      console.error("Async Store Failed")
+    }
+  }
+  const tasks = getOfflineMode
+    ? []
+    : queryClient.getQueryData(["tasks", route.params.selectedDate])
   const { data: categories } = useQuery(["categories"], async () => {
     return axios
       .post("/category/get", { user_id: userInfoState.id })
@@ -136,6 +151,53 @@ function AddTaskScreen({ route }: any) {
       },
     }
   )
+
+  async function addLocalTask(
+    taskNameAux: string,
+    is_done_aux: number,
+    selected_category_aux: string,
+    task_time_aux: number
+  ) {
+    Keyboard.dismiss()
+    if (taskNameAux.length < 2) {
+      setLoadingNewTask(false)
+      return Alert.alert("Minimum size is 2 letters.")
+    }
+    if (categoriesBlackList.includes(taskNameAux.toLowerCase().trim())) {
+      setLoadingNewTask(false)
+      return Alert.alert("ERROR: Reserved Category Name")
+    }
+    const data = await getData("local_tasks")
+    const localTasks = data != null ? data : []
+    if (
+      localTasks != null &&
+      Array.isArray(localTasks) &&
+      localTasks.length > 0 &&
+      localTasks
+        .map((task: task) => task.name.toLowerCase())
+        .includes(taskNameAux.toLowerCase())
+    ) {
+      setLoadingNewTask(false)
+      return Alert.alert("Task already exists")
+    }
+    localTasks.push({
+      id: Math.round(Math.random() * 10000).toString(),
+      name: taskNameAux,
+      date: route.params.selectedDate,
+      user_id: userInfoState.id,
+      is_done: is_done_aux,
+      task_category_name: selected_category_aux,
+      task_time: task_time_aux,
+      is_local: true,
+    })
+    try {
+      await setLocalTasks(localTasks, route.params.selectedDate)
+      setLoadingNewTask(false)
+      navigation.navigate("Home")
+    } catch (err) {
+      console.log(err)
+    }
+  }
   async function addTask(
     taskNameAux: string,
     is_done_aux: number,
@@ -413,16 +475,27 @@ function AddTaskScreen({ route }: any) {
                 onPress={() => {
                   if (isLoadingNewTask === true) return
                   setLoadingNewTask(true)
-                  mutateNewTask([
-                    taskName,
-                    is_done_state,
-                    selectedCategory === "" ? "None" : selectedCategory,
-                    isHoursFocused
-                      ? onEndEditingHours(taskHoursFocusInput)
-                      : isMinutesFocused
-                      ? onEndEditingMinutes(taskMinutesFocusInput)
-                      : taskHoursInput * 60 + taskMinutesInput,
-                  ])
+                  getOfflineMode
+                    ? addLocalTask(
+                        taskName,
+                        is_done_state,
+                        selectedCategory === "" ? "None" : selectedCategory,
+                        isHoursFocused
+                          ? onEndEditingHours(taskHoursFocusInput)
+                          : isMinutesFocused
+                          ? onEndEditingMinutes(taskMinutesFocusInput)
+                          : taskHoursInput * 60 + taskMinutesInput
+                      )
+                    : mutateNewTask([
+                        taskName,
+                        is_done_state,
+                        selectedCategory === "" ? "None" : selectedCategory,
+                        isHoursFocused
+                          ? onEndEditingHours(taskHoursFocusInput)
+                          : isMinutesFocused
+                          ? onEndEditingMinutes(taskMinutesFocusInput)
+                          : taskHoursInput * 60 + taskMinutesInput,
+                      ])
                 }}
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
                 style={{ elevation: 2 }}>

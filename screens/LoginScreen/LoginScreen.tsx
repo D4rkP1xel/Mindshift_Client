@@ -14,7 +14,12 @@ import {
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import CustomButton from "../../utils/components/Button"
 import axios from "../../utils/axiosConfig"
-import { useAppStyle, useUserInfo } from "../../utils/zustandStateManager"
+import {
+  useAppStyle,
+  useLocalTasks,
+  useOfflineMode,
+  useUserInfo,
+} from "../../utils/zustandStateManager"
 import { SafeAreaView } from "react-native-safe-area-context"
 import useAppStyling from "../../utils/hooks/useAppStyling"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -39,8 +44,9 @@ function LoginScreen() {
   const { isOffline } = getInternetStatus()
   const navigation = useNavigation<Nav>()
   const setUserInfo = useUserInfo((state) => state.setUserInfo)
-  const userInfoState = useUserInfo((state) => state.userInfo)
+  const setOfflineMode = useOfflineMode((state) => state.setOfflineMode)
   const setDarkModeState = useAppStyle((state) => state.setAppStyle)
+  const setLocalTasks = useLocalTasks((state) => state.setLocalTasks)
   const {
     fullLogoPath,
     mainColor,
@@ -61,12 +67,22 @@ function LoginScreen() {
         isDarkModeValue != null && JSON.parse(isDarkModeValue).darkMode != null
           ? setDarkModeState(JSON.parse(isDarkModeValue))
           : null
+        const offlineModeValue = await AsyncStorage.getItem("offline_mode")
+        if (
+          offlineModeValue != null &&
+          JSON.parse(offlineModeValue).offlineMode != null
+        ) {
+          setOfflineMode(JSON.parse(offlineModeValue))
+          const localTasksValue = await AsyncStorage.getItem("local_tasks")
+          if (localTasksValue != null && JSON.parse(localTasksValue) != null) {
+            setLocalTasks(JSON.parse(localTasksValue))
+          }
+        }
         const userInfoValue = await AsyncStorage.getItem("user_info")
         if (userInfoValue != null && JSON.parse(userInfoValue).id != null) {
           setUserInfo(JSON.parse(userInfoValue))
           navigation.navigate("Home")
         }
-
         return
       } catch (e) {
         console.error("Async Store Failed")

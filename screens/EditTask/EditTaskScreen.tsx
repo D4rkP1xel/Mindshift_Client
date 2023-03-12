@@ -13,7 +13,6 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
-
 import axios from "../../utils/axiosConfig"
 import useAppStyling from "../../utils/hooks/useAppStyling"
 import { useUserInfo } from "../../utils/zustandStateManager"

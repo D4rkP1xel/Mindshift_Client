@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import {
   View,
   Text,
+  Alert,
   Modal,
   TouchableWithoutFeedback,
   Keyboard,
@@ -13,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import Octicons from "react-native-vector-icons/Octicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
-import { useUserInfo } from "../../utils/zustandStateManager"
+import { useOfflineMode, useUserInfo } from "../../utils/zustandStateManager"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import Feather from "react-native-vector-icons/Feather"
 import axios from "../../utils/axiosConfig"
@@ -28,6 +29,7 @@ import useAppStyling from "../../utils/hooks/useAppStyling"
 import CustomStatusBar from "../../utils/components/StatusBar"
 import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import { task } from "../../utils/types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 type Nav = {
   navigate: (value: string, params: object | void) => void
@@ -37,6 +39,7 @@ type Nav = {
 function HomeScreen() {
   const navigation = useNavigation<Nav>()
   const [selectedDate, changeSelectedDate] = useState(getCustomDate(new Date()))
+  const getOfflineMode = useOfflineMode((state) => state.isOfflineMode)
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
@@ -56,38 +59,63 @@ function HomeScreen() {
   } = useAppStyling()
   const { data: calendarPerformance, refetch: refetchCalendarPerformance } =
     useQuery(["calendar_performance"], async () => {
-      return axios
-        .post("/task/getMonthPerformance", {
-          user_id: userInfoState.id,
-          date: shownMonthCalendar,
-        })
-        .then((res) => {
-          //console.log(res.data.data, shownMonthCalendar)
-          return res.data.data
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+      return getOfflineMode.offlineMode
+        ? null
+        : axios
+            .post("/task/getMonthPerformance", {
+              user_id: userInfoState.id,
+              date: shownMonthCalendar,
+            })
+            .then((res) => {
+              //console.log(res.data.data, shownMonthCalendar)
+              return res.data.data
+            })
+            .catch((err) => {
+              console.log(err)
+            })
     })
-
-  const { data: tasks, isLoading: isLoadingTasks } = useQuery(
-    ["tasks", selectedDate],
-    async () => {
-      return axios
-        .post("/task/get", {
-          user_id: userInfoState.id,
-          date: selectedDate,
-        })
-        .then((res) => {
-          //console.log(res.data.tasks)
-          return res.data.tasks
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+  async function getLocalTasks() {
+    try {
+      const getData = async (key: string) => {
+        try {
+          const jsonValue = await AsyncStorage.getItem(key)
+          return jsonValue != null ? JSON.parse(jsonValue) : null
+        } catch (e) {
+          console.error("Async Store Failed")
+        }
+      }
+      const data = await getData("local_tasks")
+      return data[selectedDate]
+    } catch (err) {
+      console.log(err)
+      return []
     }
-  )
-
+  }
+  const {
+    data: tasks,
+    isLoading: isLoadingTasks,
+    refetch: refetchTasks,
+  } = useQuery(["tasks", selectedDate], async () => {
+    return getOfflineMode.offlineMode
+      ? await getLocalTasks()
+      : axios
+          .post("/task/get", {
+            user_id: userInfoState.id,
+            date: selectedDate,
+          })
+          .then((res) => {
+            //console.log(res.data.tasks)
+            return res.data.tasks
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+  })
+  useEffect(() => {
+    //console.log("request")
+    refetchTasks()
+    refetchCalendarPerformance()
+  }, [getOfflineMode.offlineMode])
   useEffect(() => {
     async function refetchMonth() {
       setIsMonthLoading(true)
@@ -179,13 +207,31 @@ function HomeScreen() {
                     name={"line-graph"}
                     color={mainColorHash}
                     size={26}
-                    onPress={() => navigation.navigate("Performance")}
+                    onPress={() => {
+                      if (getOfflineMode.offlineMode) {
+                        //offline mode is on
+                        return Alert.alert(
+                          "Access denied.",
+                          "Turn off offline mode to have access to Your Performance."
+                        )
+                      }
+                      navigation.navigate("Performance")
+                    }}
                   />
                   <FontAwesome
                     name={"calendar"}
                     color={mainColorHash}
                     size={26}
-                    onPress={() => setCalendarOpen(true)}
+                    onPress={() => {
+                      if (getOfflineMode.offlineMode) {
+                        //offline mode is on
+                        return Alert.alert(
+                          "Access denied.",
+                          "Turn off offline mode to have access to the Calendar"
+                        )
+                      }
+                      setCalendarOpen(true)
+                    }}
                   />
 
                   <Octicons
