@@ -14,10 +14,19 @@ interface appStyleType {
 interface offlineType {
   offlineMode: boolean
 }
+
+interface localCategoriesType {
+  categories: string[]
+}
 interface userInfoState {
   userInfo: userType
   setUserInfo: any
 }
+interface localCategoriesState {
+  categories: { categories: string[] }
+  setLocalCategories: any
+}
+
 interface appStyleState {
   appStyle: { darkMode: boolean }
   setAppStyle: any
@@ -84,6 +93,15 @@ const useOfflineMode = create<offlineState>((set) => ({
     }),
 }))
 
+const useLocalCategories = create<localCategoriesState>((set) => ({
+  categories: { categories: [] }, //example: data=["gym", "study", ...]
+  setLocalCategories: (localCategoriesState: localCategoriesType) =>
+    set(() => {
+      storeData("local_categories", localCategoriesState)
+      return { categories: localCategoriesState }
+    }),
+}))
+
 const useLocalTasks = create<localTasksState>((set) => ({
   localTasks: {},
   setLocalTasks: async (newLocalTasks: { tasks: task[] }, newLocalTasksDate: string) => {
@@ -102,20 +120,7 @@ const useLocalTasks = create<localTasksState>((set) => ({
 
   }
 
-  // addLocalTask: (newLocalTask: task) => {
-  //   //@ts-ignore
-  //   set(async () => {
-  //     try {
-  //       let currentLocalTasks: task[] = (await getData("local_tasks")).tasks
-  //       currentLocalTasks.push(newLocalTask)
-  //       storeData("local_tasks", currentLocalTasks)
-  //       return { localTasks: currentLocalTasks }
-  //     }
-  //     catch (err) {
-  //       console.log(err)
-  //     }
-  //   })
-  // }
+
 }))
 
-export { useUserInfo, useAppStyle, useOfflineMode, useLocalTasks }
+export { useUserInfo, useAppStyle, useOfflineMode, useLocalTasks, useLocalCategories }

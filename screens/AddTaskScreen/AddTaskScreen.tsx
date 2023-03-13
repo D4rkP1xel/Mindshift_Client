@@ -15,6 +15,7 @@ import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 import axios from "../../utils/axiosConfig"
 import {
+  useLocalCategories,
   useLocalTasks,
   useOfflineMode,
   useUserInfo,
@@ -48,6 +49,7 @@ function AddTaskScreen({ route }: any) {
   const [is_done_state, set_is_done_state] = useState(-1)
   const queryClient = useQueryClient()
   const setLocalTasks = useLocalTasks((state) => state.setLocalTasks)
+  const getLocalCategories = useLocalCategories((state) => state.categories)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [taskHoursInput, setTaskHoursInput] = useState(0)
@@ -73,16 +75,19 @@ function AddTaskScreen({ route }: any) {
   const tasks = getOfflineMode
     ? []
     : queryClient.getQueryData(["tasks", route.params.selectedDate])
+
   const { data: categories } = useQuery(["categories"], async () => {
-    return axios
-      .post("/category/get", { user_id: userInfoState.id })
-      .then((res) => {
-        //console.log(res.data.categories)
-        return res.data.categories
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    return getOfflineMode.offlineMode
+      ? getLocalCategories.categories
+      : axios
+          .post("/category/get", { user_id: userInfoState.id })
+          .then((res) => {
+            //console.log(res.data.categories)
+            return res.data.categories
+          })
+          .catch((err) => {
+            console.log(err)
+          })
   })
   const { mutate: mutateNewTask } = useMutation(
     async (
@@ -193,6 +198,7 @@ function AddTaskScreen({ route }: any) {
     try {
       await setLocalTasks(localTasks, route.params.selectedDate)
       setLoadingNewTask(false)
+      queryClient.refetchQueries("tasks")
       navigation.navigate("Home")
     } catch (err) {
       console.log(err)
@@ -475,7 +481,7 @@ function AddTaskScreen({ route }: any) {
                 onPress={() => {
                   if (isLoadingNewTask === true) return
                   setLoadingNewTask(true)
-                  getOfflineMode
+                  getOfflineMode.offlineMode
                     ? addLocalTask(
                         taskName,
                         is_done_state,

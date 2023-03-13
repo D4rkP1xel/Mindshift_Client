@@ -15,13 +15,19 @@ import Fontisto from "react-native-vector-icons/Fontisto"
 import { useMutation, useQuery, useQueryClient } from "react-query"
 import axios from "../../utils/axiosConfig"
 import useAppStyling from "../../utils/hooks/useAppStyling"
-import { useUserInfo } from "../../utils/zustandStateManager"
+import {
+  useLocalCategories,
+  useLocalTasks,
+  useOfflineMode,
+  useUserInfo,
+} from "../../utils/zustandStateManager"
 import SelectedList from "../../utils/components/SelectedList"
 import { useNavigation } from "@react-navigation/native"
 import CustomStatusBar from "../../utils/components/StatusBar"
 import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 import { task } from "../../utils/types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 type Nav = {
   navigate: (value: string) => void
 }
@@ -30,14 +36,27 @@ function EditTaskScreen({ route }: any) {
   const navigation = useNavigation<Nav>()
   const [taskName, setTaskName] = useState(route.params.initialTaskName)
   const { isOffline } = getInternetStatus()
+  const getOfflineMode = useOfflineMode((state) => state.isOfflineMode)
   const [isOpenDropDownMenu, setOpenDropDownMenu] = useState<boolean>(false)
   const [is_done_state, set_is_done_state] = useState(route.params.is_done)
   const queryClient = useQueryClient()
+  const setLocalTasks = useLocalTasks((state) => state.setLocalTasks)
   const userInfoState = useUserInfo((state) => state.userInfo)
+  const getData = async (key: string) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key)
+      return jsonValue != null
+        ? JSON.parse(jsonValue)[route.params.selectedDate]
+        : null
+    } catch (e) {
+      console.error("Async Store Failed")
+    }
+  }
   const [selectedCategory, setSelectedCategory] = useState<string>(
     route.params.category
   )
   const [isLoadingEditTask, setLoadingEditTask] = useState(false)
+  const getLocalCategories = useLocalCategories((state) => state.categories)
   const {
     mainColor,
     mainColorHash,
@@ -62,16 +81,18 @@ function EditTaskScreen({ route }: any) {
     route.params.selectedDate,
   ])
   const { data: categories } = useQuery(["categories"], async () => {
-    return axios
-      .post("/category/get", { user_id: userInfoState.id })
-      .then((res) => {
-        //console.log(res.data.categories)
-        return res.data.categories
-      })
-      .catch((err) => {
-        console.log(err)
-        navigation.navigate("Home")
-      })
+    return getOfflineMode.offlineMode
+      ? getLocalCategories.categories
+      : axios
+          .post("/category/get", { user_id: userInfoState.id })
+          .then((res) => {
+            //console.log(res.data.categories)
+            return res.data.categories
+          })
+          .catch((err) => {
+            console.log(err)
+            navigation.navigate("Home")
+          })
   })
 
   const { mutate: mutateSaveChanges } = useMutation(
@@ -190,6 +211,64 @@ function EditTaskScreen({ route }: any) {
       },
     }
   )
+
+  async function saveLocalChanges(
+    taskNameAux: string,
+    is_done_aux: number,
+    selected_category_aux: string,
+    task_time_aux: number
+  ) {
+    Keyboard.dismiss()
+    let localTaskAux: task = {
+      id: route.params.id,
+      date: route.params.selectedDate,
+      is_done: route.params.is_done,
+      is_local: true,
+      name: route.params.initialTaskName,
+      task_category_name: route.params.category,
+      task_time: route.params.task_time,
+      user_id: userInfoState.id || "",
+    }
+    if (route.params.is_done !== is_done_aux) {
+      localTaskAux.is_done = is_done_aux
+    }
+    if (route.params.initialTaskName.trim() !== taskNameAux.trim()) {
+      if (taskNameAux.trim().length < 2) {
+        setLoadingEditTask(false)
+        return Alert.alert("Minimum task name size is 2 letters.")
+      }
+      if (
+        tasks != null &&
+        tasks
+          .filter((task: task) => task.id !== route.params.id)
+          .map((task: task) => task.name.toLowerCase())
+          .includes(taskNameAux.trim().toLowerCase())
+      ) {
+        setLoadingEditTask(false)
+        return Alert.alert("Task name already exists")
+      }
+      localTaskAux.name = taskNameAux
+    }
+    if (route.params.category !== selected_category_aux) {
+      localTaskAux.task_category_name = selected_category_aux
+    }
+    if (task_time_aux !== route.params.task_time) {
+      localTaskAux.task_time = task_time_aux
+    }
+    const data = await getData("local_tasks")
+    let localTasks = data != null ? data : []
+    localTasks = localTasks.map((task: task) => {
+      return task.id === route.params.id ? localTaskAux : task
+    })
+    try {
+      await setLocalTasks(localTasks, route.params.selectedDate)
+      queryClient.refetchQueries("tasks")
+      setLoadingEditTask(false)
+      navigation.navigate("Home")
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   async function saveTask(
     taskNameAux: string,
@@ -317,6 +396,22 @@ function EditTaskScreen({ route }: any) {
     }
   }
 
+  async function deleteLocalTask(idParam: string) {
+    try {
+      console.log(idParam)
+      const data: task[] | null = await getData("local_tasks")
+      let localTasks = data != null ? data : []
+      if (localTasks == null) navigation.navigate("Home")
+      localTasks = localTasks.filter((task: task) => task.id != idParam)
+      await setLocalTasks(localTasks, route.params.selectedDate)
+      queryClient.refetchQueries("tasks")
+      setLoadingEditTask(false)
+      navigation.navigate("Home")
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   function onEndEditingHours(taskHoursFocus: string): number {
     let time_aux = 0
     if (
@@ -390,7 +485,11 @@ function EditTaskScreen({ route }: any) {
               </Text>
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => mutateDeleteTask(route.params.id)}
+                onPress={() =>
+                  getOfflineMode.offlineMode
+                    ? deleteLocalTask(route.params.id)
+                    : mutateDeleteTask(route.params.id)
+                }
                 className="w-2/12 rounded-full h-6 bg-red-500 justify-center items-center"
                 style={{ elevation: 2 }}>
                 <Text className="text-white">Delete</Text>
@@ -558,16 +657,27 @@ function EditTaskScreen({ route }: any) {
                 onPress={() => {
                   if (isLoadingEditTask === true) return
                   setLoadingEditTask(true)
-                  mutateSaveChanges([
-                    taskName,
-                    is_done_state,
-                    selectedCategory,
-                    isHoursFocused
-                      ? onEndEditingHours(taskHoursFocusInput)
-                      : isMinutesFocused
-                      ? onEndEditingMinutes(taskMinutesFocusInput)
-                      : taskHoursInput * 60 + taskMinutesInput,
-                  ])
+                  getOfflineMode.offlineMode
+                    ? saveLocalChanges(
+                        taskName,
+                        is_done_state,
+                        selectedCategory,
+                        isHoursFocused
+                          ? onEndEditingHours(taskHoursFocusInput)
+                          : isMinutesFocused
+                          ? onEndEditingMinutes(taskMinutesFocusInput)
+                          : taskHoursInput * 60 + taskMinutesInput
+                      )
+                    : mutateSaveChanges([
+                        taskName,
+                        is_done_state,
+                        selectedCategory,
+                        isHoursFocused
+                          ? onEndEditingHours(taskHoursFocusInput)
+                          : isMinutesFocused
+                          ? onEndEditingMinutes(taskMinutesFocusInput)
+                          : taskHoursInput * 60 + taskMinutesInput,
+                      ])
                 }}
                 className="w-4/12 rounded-full h-12 bg-blue-500 justify-center items-center mb-3"
                 style={{ elevation: 2 }}>

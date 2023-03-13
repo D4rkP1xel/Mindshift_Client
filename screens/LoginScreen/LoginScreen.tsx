@@ -16,6 +16,7 @@ import CustomButton from "../../utils/components/Button"
 import axios from "../../utils/axiosConfig"
 import {
   useAppStyle,
+  useLocalCategories,
   useLocalTasks,
   useOfflineMode,
   useUserInfo,
@@ -47,6 +48,9 @@ function LoginScreen() {
   const setOfflineMode = useOfflineMode((state) => state.setOfflineMode)
   const setDarkModeState = useAppStyle((state) => state.setAppStyle)
   const setLocalTasks = useLocalTasks((state) => state.setLocalTasks)
+  const setLocalCategories = useLocalCategories(
+    (state) => state.setLocalCategories
+  )
   const {
     fullLogoPath,
     mainColor,
@@ -76,6 +80,10 @@ function LoginScreen() {
           const localTasksValue = await AsyncStorage.getItem("local_tasks")
           if (localTasksValue != null && JSON.parse(localTasksValue) != null) {
             setLocalTasks(JSON.parse(localTasksValue))
+          }
+          const localCategories = await AsyncStorage.getItem("local_categories")
+          if (localCategories != null && JSON.parse(localCategories) != null) {
+            setLocalCategories(JSON.parse(localCategories))
           }
         }
         const userInfoValue = await AsyncStorage.getItem("user_info")

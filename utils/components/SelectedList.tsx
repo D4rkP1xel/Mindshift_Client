@@ -13,7 +13,7 @@ import { useState } from "react"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5"
 import { useMutation } from "react-query"
-import { useUserInfo } from "../zustandStateManager"
+import { useOfflineMode, useUserInfo } from "../zustandStateManager"
 import axios from "../axiosConfig"
 import useAppStyling from "../hooks/useAppStyling"
 interface props {
@@ -38,6 +38,7 @@ function SelectedList({
 }: props) {
   const [isAddCategory, setAddCategory] = useState<boolean>(false)
   const [categoryInput, setCategoryInput] = useState<string>("")
+  const getOfflineMode = useOfflineMode((state) => state.isOfflineMode)
   const userInfoState = useUserInfo((state) => state.userInfo)
   const [isLoadingNewCategory, setLoadingNewCategory] = useState(false)
   const {
@@ -200,8 +201,15 @@ function SelectedList({
                 activeOpacity={0.7}
                 onPress={() => {
                   Keyboard.dismiss()
-                  setAddCategory(true)
-                  setOpenDropDownMenu(false)
+                  if (getOfflineMode.offlineMode) {
+                    Alert.alert(
+                      "Access denied.",
+                      "Turn off offline mode to add a category."
+                    )
+                  } else {
+                    setAddCategory(true)
+                    setOpenDropDownMenu(false)
+                  }
                 }}
                 className="rounded-full h-8 bg-black justify-center items-center px-3"
                 style={{ elevation: 2 }}>
@@ -236,31 +244,38 @@ function SelectedList({
                           <TouchableOpacity
                             activeOpacity={0.7}
                             className="pl-12 py-1"
-                            onPress={() =>
-                              Alert.alert(
-                                "Delete Category",
-                                "Are you sure you want to delete '" +
-                                  value.name +
-                                  "' ?",
-                                [
-                                  {
-                                    text: "Cancel",
-                                    style: "cancel",
-                                  },
-                                  {
-                                    text: "Confirm",
-
-                                    style: "default",
-                                    onPress: async () => {
-                                      mutateRemoveCategory(value.name)
+                            onPress={() => {
+                              if (getOfflineMode.offlineMode) {
+                                Alert.alert(
+                                  "Cannot delete Category",
+                                  "Turn off offline mode to remove a category"
+                                )
+                              } else {
+                                Alert.alert(
+                                  "Delete Category",
+                                  "Are you sure you want to delete '" +
+                                    value.name +
+                                    "' ?",
+                                  [
+                                    {
+                                      text: "Cancel",
+                                      style: "cancel",
                                     },
-                                  },
-                                ],
-                                {
-                                  cancelable: true,
-                                }
-                              )
-                            }>
+                                    {
+                                      text: "Confirm",
+
+                                      style: "default",
+                                      onPress: async () => {
+                                        mutateRemoveCategory(value.name)
+                                      },
+                                    },
+                                  ],
+                                  {
+                                    cancelable: true,
+                                  }
+                                )
+                              }
+                            }}>
                             <FontAwesome5
                               name={"trash"}
                               color={trashCanColor}

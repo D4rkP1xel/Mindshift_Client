@@ -14,7 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import Octicons from "react-native-vector-icons/Octicons"
 import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
-import { useOfflineMode, useUserInfo } from "../../utils/zustandStateManager"
+import {
+  useLocalCategories,
+  useOfflineMode,
+  useUserInfo,
+} from "../../utils/zustandStateManager"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import Feather from "react-native-vector-icons/Feather"
 import axios from "../../utils/axiosConfig"
@@ -43,6 +47,7 @@ function HomeScreen() {
   const [shownMonthCalendar, setShownMonthCalendar] = useState(
     selectedDate.slice(0, 7)
   )
+  const getLocalCategories = useLocalCategories((state) => state.categories)
   const { isOffline } = getInternetStatus()
 
   const [isMonthLoading, setIsMonthLoading] = useState(false)
@@ -74,6 +79,19 @@ function HomeScreen() {
               console.log(err)
             })
     })
+  const { data: categories } = useQuery(["categories"], async () => {
+    return getOfflineMode.offlineMode
+      ? getLocalCategories.categories
+      : axios
+          .post("/category/get", { user_id: userInfoState.id })
+          .then((res) => {
+            //console.log(res.data.categories)
+            return res.data.categories
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+  })
   async function getLocalTasks() {
     try {
       const getData = async (key: string) => {
