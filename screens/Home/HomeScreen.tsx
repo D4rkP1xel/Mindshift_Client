@@ -16,6 +16,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome5"
 import Entypo from "react-native-vector-icons/Entypo"
 import {
   useLocalCategories,
+  useLocalTasks,
   useOfflineMode,
   useUserInfo,
 } from "../../utils/zustandStateManager"
@@ -53,7 +54,10 @@ function HomeScreen() {
   const [isMonthLoading, setIsMonthLoading] = useState(false)
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
-
+  const getLocalTasks = useLocalTasks((state) => state.localTasks)
+  const getLocalTasksByDate = useLocalTasks(
+    (state) => state.getLocalTasksWithDate
+  )
   const {
     mainColor,
     mainColorHash,
@@ -80,6 +84,7 @@ function HomeScreen() {
             })
     })
   const { data: categories } = useQuery(["categories"], async () => {
+    //do not delete, its used in add/edit task
     return getOfflineMode.offlineMode
       ? getLocalCategories.categories
       : axios
@@ -92,31 +97,15 @@ function HomeScreen() {
             console.log(err)
           })
   })
-  async function getLocalTasks() {
-    try {
-      const getData = async (key: string) => {
-        try {
-          const jsonValue = await AsyncStorage.getItem(key)
-          return jsonValue != null ? JSON.parse(jsonValue) : null
-        } catch (e) {
-          console.error("Async Store Failed")
-        }
-      }
-      const data = await getData("local_tasks")
-      return data[selectedDate]
-    } catch (err) {
-      console.log(err)
-      return []
-    }
-  }
+
   const {
     data: tasks,
     isLoading: isLoadingTasks,
     refetch: refetchTasks,
   } = useQuery(["tasks", selectedDate], async () => {
     return getOfflineMode.offlineMode
-      ? await getLocalTasks()
-      : axios
+      ? getLocalTasksByDate(userInfoState.id, selectedDate)
+      : await axios
           .post("/task/get", {
             user_id: userInfoState.id,
             date: selectedDate,
