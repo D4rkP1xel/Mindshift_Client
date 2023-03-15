@@ -45,7 +45,6 @@ function SettingsScreen() {
     (state) => state.setLocalCategories
   )
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const getLocalTasks = useLocalTasks((state) => state.localTasks)
   const getLocalTasksToSave = useLocalTasks((state) => state.getLocalTasks)
   const removeLocalTask = useLocalTasks((state) => state.removeLocalTask)
   const setAppStyle = useAppStyle((state) => state.setAppStyle)

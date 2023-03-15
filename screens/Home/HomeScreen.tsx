@@ -54,9 +54,11 @@ function HomeScreen() {
   const [isMonthLoading, setIsMonthLoading] = useState(false)
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const userInfoState = useUserInfo((state) => state.userInfo)
-  const getLocalTasks = useLocalTasks((state) => state.localTasks)
   const getLocalTasksByDate = useLocalTasks(
     (state) => state.getLocalTasksWithDate
+  )
+  const getNumberLocalTasks = useLocalTasks(
+    (state) => state.getNumberLocalTasks
   )
   const {
     mainColor,
@@ -230,22 +232,21 @@ function HomeScreen() {
                     color={mainColorHash}
                     size={26}
                     onPress={() => {
-                      if (getOfflineMode.offlineMode) {
-                        //offline mode is on
-                        return Alert.alert(
-                          "Access denied.",
-                          "Turn off offline mode to have access to the Calendar"
-                        )
-                      }
                       setCalendarOpen(true)
                     }}
                   />
 
                   <Octicons
                     onPress={() =>
-                      navigation.navigate("AddTask", {
-                        selectedDate: selectedDate,
-                      })
+                      getOfflineMode.offlineMode &&
+                      getNumberLocalTasks(userInfoState.id) >= 250
+                        ? Alert.alert(
+                            "Access denied",
+                            "You have reached the limit amount of offline tasks you can add without uploading them. If you wish to add more, either delete tasks or upload them."
+                          )
+                        : navigation.navigate("AddTask", {
+                            selectedDate: selectedDate,
+                          })
                     }
                     name={"plus"}
                     color={mainColorHash}

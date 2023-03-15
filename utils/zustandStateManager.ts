@@ -124,14 +124,17 @@ const useLocalTasks = create<localTasksState>((set, get) => ({
   },
   getLocalTasksWithDate: (id: string, date: string) => {
     const tasks = get().localTasks
-    let tasksToSend = []
-    for (let i = 0; i < tasks[date].length; i++) {
-      if (tasks[date][i].user_id === id) {
-        tasksToSend.push(tasks[date][i])
-      }
-    }
-    return tasksToSend
+    if (tasks != null && tasks[date] != null && Array.isArray(tasks[date]) && tasks[date].length > 0) {
 
+      let tasksToSend = []
+      for (let i = 0; i < tasks[date].length; i++) {
+        if (tasks[date][i].user_id === id) {
+          tasksToSend.push(tasks[date][i])
+        }
+      }
+      return tasksToSend
+    }
+    return []
   },
   getNumberLocalTasks: (id: string) => {
     const tasks = get().localTasks
