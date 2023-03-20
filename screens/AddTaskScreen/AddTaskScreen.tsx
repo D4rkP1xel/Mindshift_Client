@@ -28,6 +28,7 @@ import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import Feather from "react-native-vector-icons/Feather"
 import { task } from "../../utils/types"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import getCustomDate, { getTomorrow } from "../../utils/getCustomDate"
 
 type Nav = {
   navigate: (value: string) => void
@@ -425,7 +426,17 @@ function AddTaskScreen({ route }: any) {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                set_is_done_state(0)
+                if (
+                  route.params.selectedDate === getCustomDate(getTomorrow())
+                ) {
+                  Alert.alert(
+                    "Feature unavailable",
+                    "Wait until tomorrow to change the status of the task"
+                  )
+                } else {
+                  set_is_done_state(0)
+                }
+
                 setOpenDropDownMenu(false)
                 Keyboard.dismiss()
               }}
@@ -451,7 +462,16 @@ function AddTaskScreen({ route }: any) {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                set_is_done_state(1)
+                if (
+                  route.params.selectedDate === getCustomDate(getTomorrow())
+                ) {
+                  Alert.alert(
+                    "Feature unavailable",
+                    "Wait until tomorrow to change the status of the task"
+                  )
+                } else {
+                  set_is_done_state(1)
+                }
                 setOpenDropDownMenu(false)
                 Keyboard.dismiss()
               }}

@@ -11,6 +11,7 @@ interface props {
 import { useNavigation } from "@react-navigation/native"
 
 import useAppStyling from "../hooks/useAppStyling"
+import getTaskTimeString from "../getTaskTimeString"
 type Nav = {
   navigate: (value: string, params: object | void) => void
   addListener: Function
@@ -23,10 +24,10 @@ function Task({ name, is_done, id, category, selectedDate, taskTime }: props) {
     <View
       className={
         is_done === -1
-          ? "py-2 border-b-2 border-red-600 mb-4"
+          ? "py-2 border-b-2 border-red-600 mb-4 justify-between flex-row pr-1 items-center"
           : is_done === 0
-          ? "py-2 border-b-2 border-yellow-500 mb-4"
-          : "py-2 border-b-2 border-green-600 mb-4"
+          ? "py-2 border-b-2 border-yellow-500 mb-4 justify-between flex-row pr-1 items-center"
+          : "py-2 border-b-2 border-green-600 mb-4 justify-between flex-row pr-1 items-center"
       }>
       <Text
         onPress={() => {
@@ -44,6 +45,9 @@ function Task({ name, is_done, id, category, selectedDate, taskTime }: props) {
         }}
         className={`text-lg font-normal ${mainColor}`}>
         {name}
+      </Text>
+      <Text className={`text-sm font-normal text-zinc-300`}>
+        {getTaskTimeString(taskTime)}
       </Text>
     </View>
   )

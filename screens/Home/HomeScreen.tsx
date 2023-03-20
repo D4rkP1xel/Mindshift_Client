@@ -25,6 +25,7 @@ import Feather from "react-native-vector-icons/Feather"
 import axios from "../../utils/axiosConfig"
 import getCustomDate, {
   getDatePrettyFormat,
+  getTomorrow,
   getYesterday,
 } from "../../utils/getCustomDate"
 import { useQuery } from "react-query"
@@ -34,7 +35,6 @@ import useAppStyling from "../../utils/hooks/useAppStyling"
 import CustomStatusBar from "../../utils/components/StatusBar"
 import { getInternetStatus } from "../../utils/hooks/getInternetStatus"
 import { task } from "../../utils/types"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 
 type Nav = {
   navigate: (value: string, params: object | void) => void
@@ -131,7 +131,6 @@ function HomeScreen() {
       await refetchCalendarPerformance()
       setIsMonthLoading(false)
     }
-
     refetchMonth()
   }, [shownMonthCalendar])
 
@@ -163,7 +162,7 @@ function HomeScreen() {
                 }}
                 minDate={getCustomDate(new Date(userInfoState.creation_date))}
                 initialDate={selectedDate}
-                maxDate={getCustomDate(new Date())}
+                maxDate={getCustomDate(getTomorrow())}
                 onDayPress={(date) => {
                   changeSelectedDate(date.dateString)
                   setCalendarOpen(false)
@@ -202,6 +201,8 @@ function HomeScreen() {
                   ? "Today"
                   : selectedDate === getYesterday()
                   ? "Yesterday"
+                  : selectedDate === getCustomDate(getTomorrow())
+                  ? "Tomorrow"
                   : getDatePrettyFormat(selectedDate)}
               </Text>
               <View className="h-fit ml-auto">
