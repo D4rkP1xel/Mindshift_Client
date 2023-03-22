@@ -18,7 +18,7 @@ type Nav = {
 }
 
 function Task({ name, is_done, id, category, selectedDate, taskTime }: props) {
-  const { mainColor } = useAppStyling()
+  const { mainColor, homePageTaskTime } = useAppStyling()
   const navigation = useNavigation<Nav>()
   return (
     <View
@@ -46,7 +46,7 @@ function Task({ name, is_done, id, category, selectedDate, taskTime }: props) {
         className={`text-lg font-normal ${mainColor}`}>
         {name}
       </Text>
-      <Text className={`text-sm font-normal text-zinc-300`}>
+      <Text className={`text-sm font-normal ${homePageTaskTime}`}>
         {getTaskTimeString(taskTime)}
       </Text>
     </View>

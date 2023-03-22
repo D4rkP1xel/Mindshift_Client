@@ -22,5 +22,6 @@ export default function useAppStyling() {
     calendarEnabledDays: darkMode ? "#fafafa" : "#3f3f46",
     trashCanColor: darkMode ? "#fafafa50" : "#3f3f46",
     StatusBarColor: darkMode ? "light-content" : "dark-content",
+    homePageTaskTime: darkMode ? "text-zinc-300" : "text-zinc-500"
   }
 }
