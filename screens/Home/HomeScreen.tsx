@@ -146,7 +146,7 @@ function HomeScreen() {
               backgroundColor: "rgba(0,0,0,0.5)",
             }}>
             <View className="mt-32 relative">
-              {isMonthLoading ? (
+              {isMonthLoading && !getOfflineMode.offlineMode ? (
                 <ActivityIndicator
                   size={"large"}
                   className="absolute z-50 w-full -top-14 left-auto right-auto"

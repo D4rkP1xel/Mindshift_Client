@@ -1,4 +1,4 @@
-import { View, Text, Keyboard } from "react-native"
+import { View, Text, Keyboard, TouchableWithoutFeedback } from "react-native"
 
 interface props {
   name: string
@@ -21,35 +21,34 @@ function Task({ name, is_done, id, category, selectedDate, taskTime }: props) {
   const { mainColor, homePageTaskTime } = useAppStyling()
   const navigation = useNavigation<Nav>()
   return (
-    <View
-      className={
-        is_done === -1
-          ? "py-2 border-b-2 border-red-600 mb-4 justify-between flex-row pr-1 items-center"
-          : is_done === 0
-          ? "py-2 border-b-2 border-yellow-500 mb-4 justify-between flex-row pr-1 items-center"
-          : "py-2 border-b-2 border-green-600 mb-4 justify-between flex-row pr-1 items-center"
-      }>
-      <Text
-        onPress={() => {
-          id !== "0"
-            ? navigation.navigate("EditTask", {
-                id: id,
-                initialTaskName: name,
-                is_done: is_done,
-                category: category,
-                selectedDate: selectedDate,
-                task_time: taskTime,
-              })
-            : null
-          Keyboard.dismiss()
-        }}
-        className={`text-lg font-normal ${mainColor}`}>
-        {name}
-      </Text>
-      <Text className={`text-sm font-normal ${homePageTaskTime}`}>
-        {getTaskTimeString(taskTime)}
-      </Text>
-    </View>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        id !== "0"
+          ? navigation.navigate("EditTask", {
+              id: id,
+              initialTaskName: name,
+              is_done: is_done,
+              category: category,
+              selectedDate: selectedDate,
+              task_time: taskTime,
+            })
+          : null
+        Keyboard.dismiss()
+      }}>
+      <View
+        className={
+          is_done === -1
+            ? "py-2 border-b-2 border-red-600 mb-4 justify-between flex-row pr-1 items-center"
+            : is_done === 0
+            ? "py-2 border-b-2 border-yellow-500 mb-4 justify-between flex-row pr-1 items-center"
+            : "py-2 border-b-2 border-green-600 mb-4 justify-between flex-row pr-1 items-center"
+        }>
+        <Text className={`text-lg font-normal ${mainColor}`}>{name}</Text>
+        <Text className={`text-sm font-normal ${homePageTaskTime}`}>
+          {getTaskTimeString(taskTime)}
+        </Text>
+      </View>
+    </TouchableWithoutFeedback>
   )
 }
 
