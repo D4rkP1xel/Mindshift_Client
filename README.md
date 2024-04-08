@@ -3,6 +3,7 @@ A simple To Do list mobile app, that registers activities, the amount of time sp
 Stacks used:
  - React Native (Frontend)
  - Android Studio
+ - Expo
  - Express JS / Node JS (Backend)
  - PlanetScale (SQL)
 
