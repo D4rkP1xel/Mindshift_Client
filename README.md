@@ -1,4 +1,4 @@
-A simple To Do list mobile app, that registers activities, the amount of time spent on those activities, and displays statistics on those activities (example: amount of hours spent on "reading" last month).
+A simple Habit Tracker mobile app, that registers activities, the amount of time spent on those activities, and displays statistics on those activities (example: amount of hours spent on "reading" last month).
 
 Stacks used:
  - React Native (Frontend)
